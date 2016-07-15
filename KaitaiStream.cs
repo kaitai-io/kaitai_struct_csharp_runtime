@@ -81,15 +81,15 @@ namespace Kaitai
 
 #region 16-bit integers (unsigned)
 
-        public Uint16 readU2le() {
+        public UInt16 readU2le() {
             byte[] tmp;
             mStream.Read(tmp, 0, 2);
-            return (Uint16)( (tmp[0] << 8)+(tmp[1] << 0) );
+            return (UInt16)( (tmp[0] << 8)+(tmp[1] << 0) );
         }
-        public Uint16 readU2be() {
+        public UInt16 readU2be() {
             byte[] tmp;
             mStream.Read(tmp, 0, 2);
-            return (Uint16)( (tmp[1] << 8)+(tmp[0] << 0) );
+            return (UInt16)( (tmp[1] << 8)+(tmp[0] << 0) );
         }
 
 #endregion
@@ -113,24 +113,24 @@ namespace Kaitai
 
 #region 4-byte integer reads
 #region 32-bit integers (Unsigned)
-        public Uint32 readU4le() { throw new NotImplementedException(); }
-        public Uint32 readU4be() { throw new NotImplementedException(); }
+        public UInt32 readU4le() { throw new NotImplementedException(); }
+        public UInt32 readU4be() { throw new NotImplementedException(); }
 #endregion
 #region 32-bit integers (signed)
-        public Uint32 readS4le() { throw new NotImplementedException(); }
-        public Uint32 readS4be() { throw new NotImplementedException(); }
+        public UInt32 readS4le() { throw new NotImplementedException(); }
+        public UInt32 readS4be() { throw new NotImplementedException(); }
 #endregion
 #endregion // 4-byte integer reads
 
 
 #region 8-byte integer reads
 #region 64-bit integers (unsigned)
-    public Uint64 readU8le() { throw new NotImplementedException(); }
-    public Uint64 readU8be() { throw new NotImplementedException(); }
+    public UInt64 readU8le() { throw new NotImplementedException(); }
+    public UInt64 readU8be() { throw new NotImplementedException(); }
 #endregion
 #region 64-bit integers (signed)
-    public Uint64 readS8le() { throw new NotImplementedException(); }
-    public Uint64 readS8be() { throw new NotImplementedException(); }
+    public UInt64 readS8le() { throw new NotImplementedException(); }
+    public UInt64 readS8be() { throw new NotImplementedException(); }
 #endregion
 #endregion // 8-byte integer reads 
 
