@@ -138,7 +138,9 @@ namespace Kaitai
 
         public byte[] readBytesFull()
         {
-            int count = mStream.Length - mStream.Position;
+            long countLong = mStream.Length - mStream.Position;
+            // TODO: check if the conversion is safe, throw exception otherwise?
+            int count = (int) countLong;
             byte[] buffer = new byte[count];
             mStream.Read(buffer, 0, count);
             return buffer;
@@ -146,14 +148,15 @@ namespace Kaitai
 
         public byte[] ensureFixedContents(int len, byte[] expected)
         {
-
-            IOException e = new IOException();
-            e.Message = "Expected bytes: "+Convert.ToBase64String(expected)+Environment.NewLine;
             byte[] buff = readBytes(len);
-            e.message += "Got bytes: "+Convert.ToBase64String(buff);
 
-            for(int idx =0; idx < len; idx++)
-                if(buff[idx] != expected[idx]) throw e;
+            for (int idx = 0; idx < len; idx++)
+                if (buff[idx] != expected[idx])
+                {
+                    String msg = "Expected bytes: "+Convert.ToBase64String(expected)+Environment.NewLine;
+                    msg += "Got bytes: "+Convert.ToBase64String(buff);
+                    throw new IOException(msg);
+                }
             return buff;
 
         }
