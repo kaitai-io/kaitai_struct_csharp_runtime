@@ -30,7 +30,7 @@ namespace Kaitai
 
         public void seek(long position)
         {
-            mStream.seek(position, SeekOrigin.Begin);
+            mStream.Seek(position, SeekOrigin.Begin);
         }
 
         public bool isEof()
@@ -44,7 +44,8 @@ namespace Kaitai
             {
                 byte[] tmp = new byte[n];
                 int readCount = mStream.Read(tmp, 0, n);
-                Array.Resize(tmp, readCount);
+                if (readCount < n)
+                    throw new IOException("Requested to read " + n + " bytes, but got only " + readCount);
                 return tmp;
             }
             catch(Exception e)
@@ -82,12 +83,12 @@ namespace Kaitai
 #region 16-bit integers (unsigned)
 
         public UInt16 readU2le() {
-            byte[] tmp;
+            byte[] tmp = new byte[2];
             mStream.Read(tmp, 0, 2);
             return (UInt16)( (tmp[0] << 8)+(tmp[1] << 0) );
         }
         public UInt16 readU2be() {
-            byte[] tmp;
+            byte[] tmp = new byte[2];
             mStream.Read(tmp, 0, 2);
             return (UInt16)( (tmp[1] << 8)+(tmp[0] << 0) );
         }
@@ -96,13 +97,13 @@ namespace Kaitai
 
 #region 16-bit integers (signed)
         public Int16 readS2le() {
-            byte[] tmp;
+            byte[] tmp = new byte[2];
             mStream.Read(tmp, 0, 2);
             return (Int16)( (tmp[0] << 8)+(tmp[1] << 0) );
         }
 
         public Int16 readS2be() {
-            byte[] tmp;
+            byte[] tmp = new byte[2];
             mStream.Read(tmp, 0, 2);
             return (Int16)( (tmp[1] << 8)+(tmp[0] << 0) );
         }
