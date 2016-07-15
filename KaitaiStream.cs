@@ -75,7 +75,7 @@ namespace Kaitai
                 return (byte)(val);
         }
 
-#enredgion
+#endregion
 
 #region 2-byte integer values
 
