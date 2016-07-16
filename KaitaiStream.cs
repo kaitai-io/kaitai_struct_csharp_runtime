@@ -150,15 +150,48 @@ namespace Kaitai
 #region 4-byte integer reads
 #region 32-bit integers (Unsigned)
         ///<summary>Read a 32-bit little-endian unsigned integer</summary>
-        public UInt32 readU4le() { throw new NotImplementedException(); }
+        public UInt32 readU4le()
+        {
+            byte[] buffer = readBytes(4);
+            return (UInt32)(
+                ( buffer[3] << 24 ) + 
+                ( buffer[2] << 16 ) + 
+                ( buffer[1] << 8  ) + 
+                ( buffer[0] << 0  ) );
+
+        }
         ///<summary>Read a 32-bit big-endian unsigned integer</summary>
-        public UInt32 readU4be() { throw new NotImplementedException(); }
+        public UInt32 readU4be()
+        {
+            byte[] buffer = readBytes(4);
+            return (UInt32)(
+                ( buffer[0] << 24 ) +
+                ( buffer[1] << 16 ) + 
+                ( buffer[2] << 8  ) + 
+                ( buffer[3] << 0  ) );
+        }
 #endregion
 #region 32-bit integers (signed)
         ///<summary>Read a 32-bit little-endian signed integer</summary>
-        public UInt32 readS4le() { throw new NotImplementedException(); }
+        public Int32 readS4le()
+        {
+            byte[] buffer = readBytes(4);
+            return (Int32)(
+                ( buffer[3] << 24 ) +
+                ( buffer[2] << 16 ) +
+                ( buffer[1] << 8  ) +
+                ( buffer[0] << 0  ) );
+        }
         ///<summary>Read a 32-bit big-endian signed integer</summary>
-        public UInt32 readS4be() { throw new NotImplementedException(); }
+        public Int32 readS4be() 
+        {
+            byte[] buffer = readBytes(4);
+            return (Int32)(
+                ( buffer[0] << 24 ) +
+                ( buffer[1] << 16 ) +
+                ( buffer[2] << 8  ) +
+                ( buffer[3] << 0  ) );
+        }
 #endregion
 #endregion // 4-byte integer reads
 
