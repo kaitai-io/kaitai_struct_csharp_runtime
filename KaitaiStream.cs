@@ -55,6 +55,12 @@ namespace Kaitai
         ///<summary>Read N bytes from the stream.</summary>
         public byte[] readBytes(int n)
         {
+
+            if (n > Int32.MaxValue)
+            {
+                throw new ArgumentException(String.Format("Cannot allocate {0} bytes", n));
+            }
+
             try
             {
                 byte[] tmp = new byte[n];
@@ -103,13 +109,17 @@ namespace Kaitai
         public UInt16 readU2le() {
             byte[] tmp = new byte[2];
             mStream.Read(tmp, 0, 2);
-            return (UInt16)( (tmp[0] << 8)+(tmp[1] << 0) );
+            return (UInt16)(
+                (tmp[0] << 8) +
+                (tmp[1] << 0) );
         }
         ///<summary>Read an unsigned 16-bit integer, big endian, from the stream.</summary>
         public UInt16 readU2be() {
             byte[] tmp = new byte[2];
             mStream.Read(tmp, 0, 2);
-            return (UInt16)( (tmp[1] << 8)+(tmp[0] << 0) );
+            return (UInt16)(
+                (tmp[1] << 8) +
+                (tmp[0] << 0) );
         }
 
 #endregion
@@ -119,14 +129,18 @@ namespace Kaitai
         public Int16 readS2le() {
             byte[] tmp = new byte[2];
             mStream.Read(tmp, 0, 2);
-            return (Int16)( (tmp[0] << 8)+(tmp[1] << 0) );
+            return (Int16)(
+                (tmp[0] << 8) +
+                (tmp[1] << 0) );
         }
 
         ///<summary> Read a signed 16-bit integer, big endian, from the stream.</summary>
         public Int16 readS2be() {
             byte[] tmp = new byte[2];
             mStream.Read(tmp, 0, 2);
-            return (Int16)( (tmp[1] << 8)+(tmp[0] << 0) );
+            return (Int16)(
+                (tmp[1] << 8) +
+                (tmp[0] << 0) );
         }
 #endregion
 
@@ -136,15 +150,48 @@ namespace Kaitai
 #region 4-byte integer reads
 #region 32-bit integers (Unsigned)
         ///<summary>Read a 32-bit little-endian unsigned integer</summary>
-        public UInt32 readU4le() { throw new NotImplementedException(); }
+        public UInt32 readU4le()
+        {
+            byte[] buffer = readBytes(4);
+            return (UInt32)(
+                ( buffer[3] << 24 ) + 
+                ( buffer[2] << 16 ) + 
+                ( buffer[1] << 8  ) + 
+                ( buffer[0] << 0  ) );
+
+        }
         ///<summary>Read a 32-bit big-endian unsigned integer</summary>
-        public UInt32 readU4be() { throw new NotImplementedException(); }
+        public UInt32 readU4be()
+        {
+            byte[] buffer = readBytes(4);
+            return (UInt32)(
+                ( buffer[0] << 24 ) +
+                ( buffer[1] << 16 ) + 
+                ( buffer[2] << 8  ) + 
+                ( buffer[3] << 0  ) );
+        }
 #endregion
 #region 32-bit integers (signed)
         ///<summary>Read a 32-bit little-endian signed integer</summary>
-        public UInt32 readS4le() { throw new NotImplementedException(); }
+        public Int32 readS4le()
+        {
+            byte[] buffer = readBytes(4);
+            return (Int32)(
+                ( buffer[3] << 24 ) +
+                ( buffer[2] << 16 ) +
+                ( buffer[1] << 8  ) +
+                ( buffer[0] << 0  ) );
+        }
         ///<summary>Read a 32-bit big-endian signed integer</summary>
-        public UInt32 readS4be() { throw new NotImplementedException(); }
+        public Int32 readS4be() 
+        {
+            byte[] buffer = readBytes(4);
+            return (Int32)(
+                ( buffer[0] << 24 ) +
+                ( buffer[1] << 16 ) +
+                ( buffer[2] << 8  ) +
+                ( buffer[3] << 0  ) );
+        }
 #endregion
 #endregion // 4-byte integer reads
 
@@ -152,15 +199,59 @@ namespace Kaitai
 #region 8-byte integer reads
 #region 64-bit integers (unsigned)
         ///<summary>Read a 64-bit little-endian unsigned integer</summary>
-        public UInt64 readU8le() { throw new NotImplementedException(); }
+        public UInt64 readU8le() {
+            byte[] buffer = readBytes(8);
+            return (UInt64) (
+                ( buffer[7] << 56) +
+                ( buffer[6] << 48) +
+                ( buffer[5] << 40) +
+                ( buffer[4] << 32) +
+                ( buffer[3] << 24) +
+                ( buffer[2] << 16) +
+                ( buffer[1] << 8)  +
+                ( buffer[0] << 0)  ); // low byte
+        }
         ///<summary>Read a 64-bit big-endian unsigned integer</summary>
-         public UInt64 readU8be() { throw new NotImplementedException(); }
+        public UInt64 readU8be() {
+            byte[] buffer = readBytes(8);
+            return (UInt64) (
+                ( buffer[0] << 56) +  // high byte
+                ( buffer[1] << 48) +
+                ( buffer[2] << 40) +
+                ( buffer[3] << 32) + // ^ high word
+                ( buffer[4] << 24) + // v low word
+                ( buffer[5] << 16) +
+                ( buffer[6] << 8)  +
+                ( buffer[7] << 0)  ); // low byte
+        }
 #endregion
 #region 64-bit integers (signed)
         ///<summary>Read a 64-bit little-endian signed integer</summary>
-        public UInt64 readS8le() { throw new NotImplementedException(); }
+        public Int64 readS8le() {
+            byte[] buffer = readBytes(8);
+            return (Int64) (
+                ( buffer[7] << 56) +
+                ( buffer[6] << 48) +
+                ( buffer[5] << 40) +
+                ( buffer[4] << 32) +
+                ( buffer[3] << 24) +
+                ( buffer[2] << 16) +
+                ( buffer[1] << 8)  +
+                ( buffer[0] << 0)  ); // low byte
+        }
         ///<summary>Read a 64-bit big-endian signed integer</summary>
-        public UInt64 readS8be() { throw new NotImplementedException(); }
+        public Int64 readS8be() {
+            byte[] buffer = readBytes(8);
+            return (Int64) (
+                ( buffer[0] << 56) +  // high byte
+                ( buffer[1] << 48) +
+                ( buffer[2] << 40) +
+                ( buffer[3] << 32) + // ^ high word
+                ( buffer[4] << 24) + // v low word
+                ( buffer[5] << 16) +
+                ( buffer[6] << 8)  +
+                ( buffer[7] << 0)  ); // low byte
+        }
 #endregion
 #endregion // 8-byte integer reads 
 
