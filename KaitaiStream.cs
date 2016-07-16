@@ -55,6 +55,12 @@ namespace Kaitai
         ///<summary>Read N bytes from the stream.</summary>
         public byte[] readBytes(int n)
         {
+
+            if (n > Int32.MaxValue)
+            {
+                throw new ArgumentException(String.Format("Cannot allocate {0} bytes", n));
+            }
+
             try
             {
                 byte[] tmp = new byte[n];
