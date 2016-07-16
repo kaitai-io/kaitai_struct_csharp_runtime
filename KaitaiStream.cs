@@ -109,13 +109,17 @@ namespace Kaitai
         public UInt16 readU2le() {
             byte[] tmp = new byte[2];
             mStream.Read(tmp, 0, 2);
-            return (UInt16)( (tmp[0] << 8)+(tmp[1] << 0) );
+            return (UInt16)(
+                (tmp[0] << 8) +
+                (tmp[1] << 0) );
         }
         ///<summary>Read an unsigned 16-bit integer, big endian, from the stream.</summary>
         public UInt16 readU2be() {
             byte[] tmp = new byte[2];
             mStream.Read(tmp, 0, 2);
-            return (UInt16)( (tmp[1] << 8)+(tmp[0] << 0) );
+            return (UInt16)(
+                (tmp[1] << 8) +
+                (tmp[0] << 0) );
         }
 
 #endregion
@@ -125,14 +129,18 @@ namespace Kaitai
         public Int16 readS2le() {
             byte[] tmp = new byte[2];
             mStream.Read(tmp, 0, 2);
-            return (Int16)( (tmp[0] << 8)+(tmp[1] << 0) );
+            return (Int16)(
+                (tmp[0] << 8) +
+                (tmp[1] << 0) );
         }
 
         ///<summary> Read a signed 16-bit integer, big endian, from the stream.</summary>
         public Int16 readS2be() {
             byte[] tmp = new byte[2];
             mStream.Read(tmp, 0, 2);
-            return (Int16)( (tmp[1] << 8)+(tmp[0] << 0) );
+            return (Int16)(
+                (tmp[1] << 8) +
+                (tmp[0] << 0) );
         }
 #endregion
 
