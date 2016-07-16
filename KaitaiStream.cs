@@ -199,15 +199,59 @@ namespace Kaitai
 #region 8-byte integer reads
 #region 64-bit integers (unsigned)
         ///<summary>Read a 64-bit little-endian unsigned integer</summary>
-        public UInt64 readU8le() { throw new NotImplementedException(); }
+        public UInt64 readU8le() {
+            byte[] buffer = readBytes(8);
+            return (UInt64) (
+                ( buffer[7] << 56) +
+                ( buffer[6] << 48) +
+                ( buffer[5] << 40) +
+                ( buffer[4] << 32) +
+                ( buffer[3] << 24) +
+                ( buffer[2] << 16) +
+                ( buffer[1] << 8)  +
+                ( buffer[0] << 0)  ); // low byte
+        }
         ///<summary>Read a 64-bit big-endian unsigned integer</summary>
-         public UInt64 readU8be() { throw new NotImplementedException(); }
+        public UInt64 readU8be() {
+            byte[] buffer = readBytes(8);
+            return (UInt64) (
+                ( buffer[0] << 56) +  // high byte
+                ( buffer[1] << 48) +
+                ( buffer[2] << 40) +
+                ( buffer[3] << 32) + // ^ high word
+                ( buffer[4] << 24) + // v low word
+                ( buffer[5] << 16) +
+                ( buffer[6] << 8)  +
+                ( buffer[7] << 0)  ); // low byte
+        }
 #endregion
 #region 64-bit integers (signed)
         ///<summary>Read a 64-bit little-endian signed integer</summary>
-        public UInt64 readS8le() { throw new NotImplementedException(); }
+        public Int64 readS8le() {
+            byte[] buffer = readBytes(8);
+            return (Int64) (
+                ( buffer[7] << 56) +
+                ( buffer[6] << 48) +
+                ( buffer[5] << 40) +
+                ( buffer[4] << 32) +
+                ( buffer[3] << 24) +
+                ( buffer[2] << 16) +
+                ( buffer[1] << 8)  +
+                ( buffer[0] << 0)  ); // low byte
+        }
         ///<summary>Read a 64-bit big-endian signed integer</summary>
-        public UInt64 readS8be() { throw new NotImplementedException(); }
+        public Int64 readS8be() {
+            byte[] buffer = readBytes(8);
+            return (Int64) (
+                ( buffer[0] << 56) +  // high byte
+                ( buffer[1] << 48) +
+                ( buffer[2] << 40) +
+                ( buffer[3] << 32) + // ^ high word
+                ( buffer[4] << 24) + // v low word
+                ( buffer[5] << 16) +
+                ( buffer[6] << 8)  +
+                ( buffer[7] << 0)  ); // low byte
+        }
 #endregion
 #endregion // 8-byte integer reads 
 
