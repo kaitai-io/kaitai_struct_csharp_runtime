@@ -2,15 +2,18 @@ using System;
 
 namespace Kaitai
 {
-    public class KaitaiStruct
+    public abstract class KaitaiStruct
     {
-        protected KaitaiStream m_io;
+        protected KaitaiStream _stream;
 
-        public KaitaiStruct(KaitaiStream _io)
+        public KaitaiStream GetKaitaiStream()
         {
-            m_io = _io;
+            return _stream;
         }
 
-        public KaitaiStream _io() { return m_io; }
+        public KaitaiStruct(KaitaiStream stream)
+        {
+            _stream = stream;
+        }
     }
 }

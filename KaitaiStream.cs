@@ -1,220 +1,206 @@
 using System;
 using System.IO;
+using System.IO.Compression;
+using System.Linq;
 
 namespace Kaitai
 {
-    ///<summary>
-    /// KaitaiStream is a special stream wrapping a specific set of functionality
-    /// Specifically, it allows (unlike normal Streams) picking the endianness of reads,
-    /// as well as signed/unsigned-ness of read values.
-    ///</summary>
-    public class KaitaiStream 
+    /// <summary>
+    /// The base Kaitai steam which exposes an API for the Kaitai Struct framework.
+    /// It's based off a <code>BinaryReader</code>, which is a little-endian reader.
+    /// </summary>
+    public partial class KaitaiStream : BinaryReader
     {
+        #region Constructors
+        
+        public KaitaiStream(Stream stream) : base(stream)
+        {
 
-        private Stream mStream;
+        }
 
-#region Constructors
         ///<summary>
         /// Creates a KaitaiStream backed by a file (RO)
         ///</summary>
-        public KaitaiStream(String filename)
+        public KaitaiStream(string file) : base(File.Open(file, FileMode.Open, FileAccess.Read, FileShare.Read))
         {
-            mStream = (Stream)(new FileStream(filename, FileMode.Open));
+
         }
 
         ///<summary>
         ///Creates a KaitaiStream backed by a byte buffer
         ///</summary>
-        public KaitaiStream(byte[] buffer)
-        {
-            mStream = new MemoryStream(buffer);
-        }
-
-#endregion 
-
-
-#region Raw stream passthru
-        ///<summary>Get the position within the stream</summary>
-        public long pos()
-        {
-            return mStream.Position;
-        }
-
-        ///<summary>Seek to a specific position from the beginning of the stream</summary>
-        public void seek(long position)
-        {
-            mStream.Seek(position, SeekOrigin.Begin);
-        }
-
-        ///<summary>Return if the current stream is at the end of the stream.</summary>
-        public bool isEof()
-        {
-            return mStream.Position == mStream.Length;
-        }
-
-        ///<summary>Read N bytes from the stream.</summary>
-        public byte[] readBytes(int n)
+        public KaitaiStream(byte[] bytes) : base(new MemoryStream(bytes))
         {
 
-            if (n > Int32.MaxValue)
-            {
-                throw new ArgumentException(String.Format("Cannot allocate {0} bytes", n));
-            }
-
-            try
-            {
-                byte[] tmp = new byte[n];
-                int readCount = mStream.Read(tmp, 0, n);
-                if (readCount < n)
-                    throw new IOException("Requested to read " + n + " bytes, but got only " + readCount);
-                return tmp;
-            }
-            catch(Exception e)
-            {
-                throw new IOException("Failed to read "+n+" bytes from stream", e);
-            }
         }
+        
+        #endregion
 
-#endregion
-
-#region Read Byte/SByte
-
-        ///<summary> Read 1 signed byte from the stream</summary>
-        public SByte readS1()
+        /// <summary>
+        /// Get the current position in the stream
+        /// </summary>
+        /// <returns></returns>
+        public long Pos()
         {
-            int val = mStream.ReadByte();
-            if(val == -1)
-                throw new Exception("At EOF!");
-            else
-                return (SByte)val;
+            return BaseStream.Position;
         }
 
-        ///<summary>Read 1 unsigned byte fro mthe stream.</summary>
-        public byte readU1() 
-        { 
-            int val = mStream.ReadByte();
-            if(val == -1) 
-                throw new Exception("At EOF!");
-            else
-                return (byte)(val);
-        }
-
-#endregion
-
-#region 2-byte integer values
-
-#region 16-bit integers (unsigned)
-
-        ///<summary>Read an unsigned 16-bit integer, little endian from the stream.</summary>
-        public UInt16 readU2le() {
-            byte[] tmp = new byte[2];
-            mStream.Read(tmp, 0, 2);
-            return (UInt16)(
-                (tmp[0] << 8) +
-                (tmp[1] << 0) );
-        }
-        ///<summary>Read an unsigned 16-bit integer, big endian, from the stream.</summary>
-        public UInt16 readU2be() {
-            byte[] tmp = new byte[2];
-            mStream.Read(tmp, 0, 2);
-            return (UInt16)(
-                (tmp[1] << 8) +
-                (tmp[0] << 0) );
-        }
-
-#endregion
-
-#region 16-bit integers (signed)
-        ///<summary> Read a signed 16-bit integer, little endian, from the stream.</summary>
-        public Int16 readS2le() {
-            byte[] tmp = new byte[2];
-            mStream.Read(tmp, 0, 2);
-            return (Int16)(
-                (tmp[0] << 8) +
-                (tmp[1] << 0) );
-        }
-
-        ///<summary> Read a signed 16-bit integer, big endian, from the stream.</summary>
-        public Int16 readS2be() {
-            byte[] tmp = new byte[2];
-            mStream.Read(tmp, 0, 2);
-            return (Int16)(
-                (tmp[1] << 8) +
-                (tmp[0] << 0) );
-        }
-#endregion
-
-#endregion
-
-
-#region 4-byte integer reads
-#region 32-bit integers (Unsigned)
-        ///<summary>Read a 32-bit little-endian unsigned integer</summary>
-        public UInt32 readU4le()
+        /// <summary>
+        /// Seek to a specific position from the beginning of the stream
+        /// </summary>
+        /// <param name="position">The position to seek to</param>
+        public void Seek(long position)
         {
-            byte[] buffer = readBytes(4);
-            return (UInt32)(
-                ( buffer[3] << 24 ) + 
-                ( buffer[2] << 16 ) + 
-                ( buffer[1] << 8  ) + 
-                ( buffer[0] << 0  ) );
+            BaseStream.Seek(position, SeekOrigin.Begin);
+        }
 
-        }
-        ///<summary>Read a 32-bit big-endian unsigned integer</summary>
-        public UInt32 readU4be()
+        /// <summary>
+        /// Check if the stream position is at the end of the stream
+        /// </summary>
+        /// <returns>True if the pointer is at the end of the stream</returns>
+        public bool IsEof()
         {
-            byte[] buffer = readBytes(4);
-            return (UInt32)(
-                ( buffer[0] << 24 ) +
-                ( buffer[1] << 16 ) + 
-                ( buffer[2] << 8  ) + 
-                ( buffer[3] << 0  ) );
+            return BaseStream.Position >= BaseStream.Length;
         }
-#endregion
-#region 32-bit integers (signed)
-        ///<summary>Read a 32-bit little-endian signed integer</summary>
-        public Int32 readS4le()
-        {
-            byte[] buffer = readBytes(4);
-            return (Int32)(
-                ( buffer[3] << 24 ) +
-                ( buffer[2] << 16 ) +
-                ( buffer[1] << 8  ) +
-                ( buffer[0] << 0  ) );
-        }
-        ///<summary>Read a 32-bit big-endian signed integer</summary>
-        public Int32 readS4be() 
-        {
-            byte[] buffer = readBytes(4);
-            return (Int32)(
-                ( buffer[0] << 24 ) +
-                ( buffer[1] << 16 ) +
-                ( buffer[2] << 8  ) +
-                ( buffer[3] << 0  ) );
-        }
-#endregion
-#endregion // 4-byte integer reads
 
+        /// <summary>
+        /// Read a fixed number of bytes from the stream
+        /// </summary>
+        /// <param name="count">The number of bytes to read</param>
+        /// <returns></returns>
+        public byte[] ReadBytes(long count)
+        {
+            return base.ReadBytes((int) count);
+        }
 
-#region 8-byte integer reads
-#region 64-bit integers (unsigned)
-        ///<summary>Read a 64-bit little-endian unsigned integer</summary>
-        public UInt64 readU8le() {
+        /// <summary>
+        /// Read an unsigned byte from the stream
+        /// </summary>
+        /// <returns></returns>
+        public byte ReadU1()
+        {
+            return ReadByte();
+        }
+
+        /// <summary>
+        /// Read a signed byte from the stream
+        /// </summary>
+        /// <returns></returns>
+        public sbyte ReadS1()
+        {
+            return ReadSByte();
+        }
+
+        /// <summary>
+        /// Read an unsigned short from the stream (little endian)
+        /// </summary>
+        /// <returns></returns>
+        public ushort ReadU2le()
+        {
+            return ReadUInt16();
+        }
+
+        /// <summary>
+        /// Read a signed short from the stream (little endian)
+        /// </summary>
+        /// <returns></returns>
+        public short ReadS2le()
+        {
+            return ReadInt16();
+        }
+
+        /// <summary>
+        /// Read an unsigned int from the stream (little endian)
+        /// </summary>
+        /// <returns></returns>
+        public uint ReadU4le()
+        {
+            return ReadUInt32();
+        }
+
+        /// <summary>
+        /// Read a signed int from the stream (little endian)
+        /// </summary>
+        /// <returns></returns>
+        public int ReadS4le()
+        {
+            return ReadInt32();
+        }
+
+        /// <summary>
+        /// Read an unsigned long from the stream (little endian)
+        /// </summary>
+        /// <returns></returns>
+        public ulong ReadU8le()
+        {
+            return ReadUInt64();
+        }
+
+        /// <summary>
+        /// Read a signed long from the stream (little endian)
+        /// </summary>
+        /// <returns></returns>
+        public long ReadS8le()
+        {
+            return ReadInt64();
+        }
+
+        /// <summary>
+        /// Read an unsigned short from the stream (big endian)
+        /// </summary>
+        /// <returns></returns>
+        public ushort ReadU2be()
+        {
+            var b1 = ReadByte();
+            var b2 = ReadByte();
+            return (ushort) ((b1 << 8) + (b2 << 0));
+        }
+
+        /// <summary>
+        /// Read a signed short from the stream (big endian)
+        /// </summary>
+        /// <returns></returns>
+        public short ReadS2be()
+        {
+            var b1 = ReadByte();
+            var b2 = ReadByte();
+            return (short) ((b1 << 8) + (b2 << 0));
+        }
+
+        /// <summary>
+        /// Read an unsigned int from the stream (big endian)
+        /// </summary>
+        /// <returns></returns>
+        public uint ReadU4be()
+        {
+            var b1 = ReadByte();
+            var b2 = ReadByte();
+            var b3 = ReadByte();
+            var b4 = ReadByte();
+            return (uint) ((b1 << 24) + (b2 << 16) + (b3 << 8) + (b4 << 0));
+        }
+
+        /// <summary>
+        /// Read a signed int from the stream (big endian)
+        /// </summary>
+        /// <returns></returns>
+        public int ReadS4be()
+        {
+            var b1 = ReadByte();
+            var b2 = ReadByte();
+            var b3 = ReadByte();
+            var b4 = ReadByte();
+            return (b1 << 24) + (b2 << 16) + (b3 << 8) + (b4 << 0);
+        }
+
+        /// <summary>
+        /// Read an unsigned long from the stream (big endian)
+        /// </summary>
+        /// <returns></returns>
+        public ulong ReadU8be()
+        {
             byte[] buffer = readBytes(8);
-            return (UInt64) (
-                ( buffer[7] << 56) +
-                ( buffer[6] << 48) +
-                ( buffer[5] << 40) +
-                ( buffer[4] << 32) +
-                ( buffer[3] << 24) +
-                ( buffer[2] << 16) +
-                ( buffer[1] << 8)  +
-                ( buffer[0] << 0)  ); // low byte
-        }
-        ///<summary>Read a 64-bit big-endian unsigned integer</summary>
-        public UInt64 readU8be() {
-            byte[] buffer = readBytes(8);
-            return (UInt64) (
+            return (ulong) (
                 ( buffer[0] << 56) +  // high byte
                 ( buffer[1] << 48) +
                 ( buffer[2] << 40) +
@@ -224,23 +210,13 @@ namespace Kaitai
                 ( buffer[6] << 8)  +
                 ( buffer[7] << 0)  ); // low byte
         }
-#endregion
-#region 64-bit integers (signed)
-        ///<summary>Read a 64-bit little-endian signed integer</summary>
-        public Int64 readS8le() {
-            byte[] buffer = readBytes(8);
-            return (Int64) (
-                ( buffer[7] << 56) +
-                ( buffer[6] << 48) +
-                ( buffer[5] << 40) +
-                ( buffer[4] << 32) +
-                ( buffer[3] << 24) +
-                ( buffer[2] << 16) +
-                ( buffer[1] << 8)  +
-                ( buffer[0] << 0)  ); // low byte
-        }
-        ///<summary>Read a 64-bit big-endian signed integer</summary>
-        public Int64 readS8be() {
+
+        /// <summary>
+        /// Read a signed long from the stream (big endian)
+        /// </summary>
+        /// <returns></returns>
+        public long ReadS8be()
+        {
             byte[] buffer = readBytes(8);
             return (Int64) (
                 ( buffer[0] << 56) +  // high byte
@@ -252,65 +228,133 @@ namespace Kaitai
                 ( buffer[6] << 8)  +
                 ( buffer[7] << 0)  ); // low byte
         }
-#endregion
-#endregion // 8-byte integer reads 
 
-        ///<summary>Read all remaining bytes from the stream.</summary>
-        public byte[] readBytesFull()
+        /// <summary>
+        /// Read all the remaining bytes from the stream until the end is reached
+        /// </summary>
+        /// <returns></returns>
+        public byte[] ReadBytesFull()
         {
-            long countLong = mStream.Length - mStream.Position;
-            // TODO: check if the conversion is safe, throw exception otherwise?
-            int count = (int) countLong;
-            byte[] buffer = new byte[count];
-            mStream.Read(buffer, 0, count);
-            return buffer;
+            return ReadBytes(BaseStream.Length - BaseStream.Position);
         }
 
-        ///<summary>Read a specific set of bytes, expecting a specific result.</summary>
-        public byte[] ensureFixedContents(int len, byte[] expected)
+        /// <summary>
+        /// Read a specific set of bytes and assert that they are the same as an expected result
+        /// </summary>
+        /// <param name="length">The number of bytes to read</param>
+        /// <param name="expected">The expected result</param>
+        /// <returns></returns>
+        public byte[] EnsureFixedContents(int length, byte[] expected)
         {
-            byte[] buff = readBytes(len);
+            var bytes = ReadBytes(length);
+            if (!bytes.SequenceEqual(expected))
+            {
+                throw new Exception($"Expected bytes: {Convert.ToBase64String(expected)}, Instead got: {Convert.ToBase64String(bytes)}");
+            }
+            return bytes;
+        }
 
-            for (int idx = 0; idx < len; idx++)
-                if (buff[idx] != expected[idx])
+        /// <summary>
+        /// Read a string until the end of the stream is reached
+        /// </summary>
+        /// <param name="encoding">The string encoding to use</param>
+        /// <returns></returns>
+        public string ReadStringEos(string encoding)
+        {
+            return System.Text.Encoding.GetEncoding(encoding).GetString(ReadBytesFull());
+        }
+
+        /// <summary>
+        /// Read a string of a specific length from the stream
+        /// </summary>
+        /// <param name="length">The number of bytes to read</param>
+        /// <param name="encoding">The string encoding to use</param>
+        /// <returns></returns>
+        public string ReadStringByteLimit(long length, string encoding)
+        {
+            return System.Text.Encoding.GetEncoding(encoding).GetString(ReadBytes(length));
+        }
+
+        /// <summary>
+        /// Read a terminated string from the stream
+        /// </summary>
+        /// <param name="encoding">The string encoding to use</param>
+        /// <param name="terminator">The string terminator value</param>
+        /// <param name="includeTerminator">True to include the terminator in the returned string</param>
+        /// <param name="consumeTerminator">True to consume the terminator byte before returning</param>
+        /// <param name="eosError">True to throw an error when the EOS was reached before the terminator</param>
+        /// <returns></returns>
+        public string ReadStringTerminated(string encoding, byte terminator, bool includeTerminator, bool consumeTerminator, bool eosError)
+        {
+            var bytes = new System.Collections.Generic.List<byte>();
+            while (true)
+            {
+                if (IsEof())
                 {
-                    String msg = "Expected bytes: "+Convert.ToBase64String(expected)+Environment.NewLine;
-                    msg += "Got bytes: "+Convert.ToBase64String(buff);
-                    throw new IOException(msg);
+                    if (eosError) throw new EndOfStreamException($"End of stream reached, but no terminator `{terminator}` found");
+                    break;
                 }
-            return buff;
 
+                var b = ReadByte();
+                if (b == terminator)
+                {
+                    if (includeTerminator) bytes.Add(b);
+                    if (!consumeTerminator) Seek(Pos() - 1);
+                    break;
+                }
+                bytes.Add(b);
+            }
+            return System.Text.Encoding.GetEncoding(encoding).GetString(bytes.ToArray());
         }
 
-        ///<summary>Read a string until the end of the stream.</summary>
-        public String readStrEos(String encoding)
+        /// <summary>
+        /// Deflates a stream of bytes
+        /// </summary>
+        /// <param name="data">The data to deflate</param>
+        /// <returns>The deflated result</returns>
+        public byte[] ProcessZlib(byte[] data)
         {
-            System.Text.Encoding _encoding = System.Text.Encoding.GetEncoding(encoding);
-            return _encoding.GetString(readBytesFull());
+            using (var ms = new MemoryStream(data))
+            {
+                using (var ds = new DeflateStream(ms, CompressionMode.Decompress))
+                {
+                    using (var target = new MemoryStream())
+                    {
+                        ds.CopyTo(target);
+                        return target.ToArray();
+                    }
+                }
+            }
         }
 
-        ///<summary>Read a string from len characters in the specified encoding.</summary>
-        public String readStrByteLimit(int len, String encoding)
+        /// <summary>
+        /// Performs a circular left rotation shift for a given buffer by a given amount of bits.
+        /// Pass a negative amount to rotate right.
+        /// </summary>
+        /// <param name="data">The data to rotate</param>
+        /// <param name="amount">The number of bytes to rotate by</param>
+        /// <param name="groupSize"></param>
+        /// <returns></returns>
+        public byte[] ProcessRotateLeft(byte[] data, int amount, int groupSize)
         {
-            throw new NotImplementedException();
-        }
-        
-        ///<summary>Read a string in a specific encoding, with a specific terminator, etc.</summary>
-        public String readStrz(String encoding, byte term, bool includeTerm, bool consumeTerm, bool eosError)
-        {
-            throw new NotImplementedException();
-        }
-        
-        ///<summary>Inflate a Zlib block</summary>
-        public byte[] processZlib(byte[] data)
-        {
-            throw new NotImplementedException();
-        }
-        
-        ///<summary>Barrel-rotate</summary>
-        public byte[] processRotateLeft(byte[] data, int amount, int groupSize)
-        {
-            throw new NotImplementedException();
+            if (amount > 7 || amount < -7) throw new ArgumentException("Rotation of more than 7 cannot be performed.", nameof(amount));
+            if (amount < 0) amount += 8; // Rotation of -2 is the same as rotation of +6
+
+            var r = new byte[data.Length];
+            switch (groupSize)
+            {
+                case 1:
+                    for (var i = 0; i < data.Length; i++)
+                    {
+                        var bits = data[i];
+                        // http://stackoverflow.com/a/812039
+                        r[i] = (byte) ((bits << amount) | (bits >> (8 - amount)));
+                    }
+                    break;
+                default:
+                    throw new NotImplementedException($"Unable to rotate a group of {groupSize} bytes yet");
+            }
+            return r;
         }
     }
 }
