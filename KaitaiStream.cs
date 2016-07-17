@@ -33,7 +33,7 @@ namespace Kaitai
         {
 
         }
-        
+
         #endregion
 
         /// <summary>
@@ -355,6 +355,16 @@ namespace Kaitai
                     throw new NotImplementedException($"Unable to rotate a group of {groupSize} bytes yet");
             }
             return r;
+        }
+
+        public byte[] ProcessXorInt(byte[] value, int xorValue)
+        {
+            var result = new byte[value.Length];
+            for (int i = 0; i < value.Length; i++)
+            {
+                result[i] = (byte) (value[i] ^ xorValue);
+            }
+            return result;
         }
     }
 }
