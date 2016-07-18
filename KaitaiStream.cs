@@ -199,7 +199,7 @@ namespace Kaitai
         /// <returns></returns>
         public ulong ReadU8be()
         {
-            byte[] buffer = readBytes(8);
+            byte[] buffer = ReadBytes(8);
             return (ulong) (
                 ( buffer[0] << 56) +  // high byte
                 ( buffer[1] << 48) +
@@ -217,7 +217,7 @@ namespace Kaitai
         /// <returns></returns>
         public long ReadS8be()
         {
-            byte[] buffer = readBytes(8);
+            byte[] buffer = ReadBytes(8);
             return (Int64) (
                 ( buffer[0] << 56) +  // high byte
                 ( buffer[1] << 48) +
@@ -259,7 +259,7 @@ namespace Kaitai
         /// </summary>
         /// <param name="encoding">The string encoding to use</param>
         /// <returns></returns>
-        public string ReadStringEos(string encoding)
+        public string ReadStrEos(string encoding)
         {
             return System.Text.Encoding.GetEncoding(encoding).GetString(ReadBytesFull());
         }
@@ -270,7 +270,7 @@ namespace Kaitai
         /// <param name="length">The number of bytes to read</param>
         /// <param name="encoding">The string encoding to use</param>
         /// <returns></returns>
-        public string ReadStringByteLimit(long length, string encoding)
+        public string ReadStrByteLimit(long length, string encoding)
         {
             return System.Text.Encoding.GetEncoding(encoding).GetString(ReadBytes(length));
         }
@@ -284,7 +284,7 @@ namespace Kaitai
         /// <param name="consumeTerminator">True to consume the terminator byte before returning</param>
         /// <param name="eosError">True to throw an error when the EOS was reached before the terminator</param>
         /// <returns></returns>
-        public string ReadStringTerminated(string encoding, byte terminator, bool includeTerminator, bool consumeTerminator, bool eosError)
+        public string ReadStrz(string encoding, byte terminator, bool includeTerminator, bool consumeTerminator, bool eosError)
         {
             var bytes = new System.Collections.Generic.List<byte>();
             while (true)

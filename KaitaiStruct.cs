@@ -4,16 +4,19 @@ namespace Kaitai
 {
     public abstract class KaitaiStruct
     {
-        protected KaitaiStream _stream;
+        protected KaitaiStream m_io;
 
-        public KaitaiStream GetKaitaiStream()
+        public KaitaiStream M_Io
         {
-            return _stream;
+            get
+            {
+                return m_io;
+            }
         }
 
-        public KaitaiStruct(KaitaiStream stream)
+        public KaitaiStruct(KaitaiStream io)
         {
-            _stream = stream;
+            m_io = io;
         }
     }
 }
