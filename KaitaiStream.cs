@@ -12,7 +12,7 @@ namespace Kaitai
     public partial class KaitaiStream : BinaryReader
     {
         #region Constructors
-        
+
         public KaitaiStream(Stream stream) : base(stream)
         {
 
@@ -70,7 +70,31 @@ namespace Kaitai
         /// <returns></returns>
         public byte[] ReadBytes(long count)
         {
-            return base.ReadBytes((int) count);
+            return base.ReadBytes((int)count);
+        }
+
+        /// <summary>
+        /// Read bytes from the stream in little endian format and convert them to the endianness of the current platform
+        /// </summary>
+        /// <param name="count">The number of bytes to read</param>
+        /// <returns>An array of bytes that matches the endianness of the current platform</returns>
+        protected byte[] ReadBytesNormalisedLittleEndian(int count)
+        {
+            var bytes = ReadBytes(count);
+            if (!BitConverter.IsLittleEndian) Array.Reverse(bytes);
+            return bytes;
+        }
+
+        /// <summary>
+        /// Read bytes from the stream in big endian format and convert them to the endianness of the current platform
+        /// </summary>
+        /// <param name="count">The number of bytes to read</param>
+        /// <returns>An array of bytes that matches the endianness of the current platform</returns>
+        protected byte[] ReadBytesNormalisedBigEndian(int count)
+        {
+            var bytes = ReadBytes(count);
+            if (BitConverter.IsLittleEndian) Array.Reverse(bytes);
+            return bytes;
         }
 
         /// <summary>
@@ -97,7 +121,7 @@ namespace Kaitai
         /// <returns></returns>
         public ushort ReadU2le()
         {
-            return ReadUInt16();
+            return BitConverter.ToUInt16(ReadBytesNormalisedLittleEndian(2), 0);
         }
 
         /// <summary>
@@ -106,7 +130,7 @@ namespace Kaitai
         /// <returns></returns>
         public short ReadS2le()
         {
-            return ReadInt16();
+            return BitConverter.ToInt16(ReadBytesNormalisedLittleEndian(2), 0);
         }
 
         /// <summary>
@@ -115,7 +139,7 @@ namespace Kaitai
         /// <returns></returns>
         public uint ReadU4le()
         {
-            return ReadUInt32();
+            return BitConverter.ToUInt32(ReadBytesNormalisedLittleEndian(4), 0);
         }
 
         /// <summary>
@@ -124,7 +148,7 @@ namespace Kaitai
         /// <returns></returns>
         public int ReadS4le()
         {
-            return ReadInt32();
+            return BitConverter.ToInt32(ReadBytesNormalisedLittleEndian(4), 0);
         }
 
         /// <summary>
@@ -133,7 +157,7 @@ namespace Kaitai
         /// <returns></returns>
         public ulong ReadU8le()
         {
-            return ReadUInt64();
+            return BitConverter.ToUInt64(ReadBytesNormalisedLittleEndian(8), 0);
         }
 
         /// <summary>
@@ -142,7 +166,7 @@ namespace Kaitai
         /// <returns></returns>
         public long ReadS8le()
         {
-            return ReadInt64();
+            return BitConverter.ToInt64(ReadBytesNormalisedLittleEndian(8), 0);
         }
 
         /// <summary>
@@ -151,9 +175,7 @@ namespace Kaitai
         /// <returns></returns>
         public ushort ReadU2be()
         {
-            var b1 = ReadByte();
-            var b2 = ReadByte();
-            return (ushort) ((b1 << 8) + (b2 << 0));
+            return BitConverter.ToUInt16(ReadBytesNormalisedBigEndian(2), 0);
         }
 
         /// <summary>
@@ -162,9 +184,7 @@ namespace Kaitai
         /// <returns></returns>
         public short ReadS2be()
         {
-            var b1 = ReadByte();
-            var b2 = ReadByte();
-            return (short) ((b1 << 8) + (b2 << 0));
+            return BitConverter.ToInt16(ReadBytesNormalisedBigEndian(2), 0);
         }
 
         /// <summary>
@@ -173,11 +193,7 @@ namespace Kaitai
         /// <returns></returns>
         public uint ReadU4be()
         {
-            var b1 = ReadByte();
-            var b2 = ReadByte();
-            var b3 = ReadByte();
-            var b4 = ReadByte();
-            return (uint) ((b1 << 24) + (b2 << 16) + (b3 << 8) + (b4 << 0));
+            return BitConverter.ToUInt32(ReadBytesNormalisedBigEndian(4), 0);
         }
 
         /// <summary>
@@ -186,11 +202,7 @@ namespace Kaitai
         /// <returns></returns>
         public int ReadS4be()
         {
-            var b1 = ReadByte();
-            var b2 = ReadByte();
-            var b3 = ReadByte();
-            var b4 = ReadByte();
-            return (b1 << 24) + (b2 << 16) + (b3 << 8) + (b4 << 0);
+            return BitConverter.ToInt32(ReadBytesNormalisedBigEndian(4), 0);
         }
 
         /// <summary>
@@ -199,16 +211,7 @@ namespace Kaitai
         /// <returns></returns>
         public ulong ReadU8be()
         {
-            byte[] buffer = ReadBytes(8);
-            return (ulong) (
-                ( buffer[0] << 56) +  // high byte
-                ( buffer[1] << 48) +
-                ( buffer[2] << 40) +
-                ( buffer[3] << 32) + // ^ high word
-                ( buffer[4] << 24) + // v low word
-                ( buffer[5] << 16) +
-                ( buffer[6] << 8)  +
-                ( buffer[7] << 0)  ); // low byte
+            return BitConverter.ToUInt64(ReadBytesNormalisedBigEndian(8), 0);
         }
 
         /// <summary>
@@ -217,16 +220,7 @@ namespace Kaitai
         /// <returns></returns>
         public long ReadS8be()
         {
-            byte[] buffer = ReadBytes(8);
-            return (Int64) (
-                ( buffer[0] << 56) +  // high byte
-                ( buffer[1] << 48) +
-                ( buffer[2] << 40) +
-                ( buffer[3] << 32) + // ^ high word
-                ( buffer[4] << 24) + // v low word
-                ( buffer[5] << 16) +
-                ( buffer[6] << 8)  +
-                ( buffer[7] << 0)  ); // low byte
+            return BitConverter.ToInt64(ReadBytesNormalisedBigEndian(8), 0);
         }
 
         /// <summary>
