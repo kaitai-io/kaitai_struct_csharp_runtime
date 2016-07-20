@@ -302,13 +302,28 @@ namespace Kaitai
         }
 
         /// <summary>
-        /// Deflates a stream of bytes
+        /// Inflates a deflated zlib byte stream
         /// </summary>
         /// <param name="data">The data to deflate</param>
         /// <returns>The deflated result</returns>
         public byte[] ProcessZlib(byte[] data)
         {
-            using (var ms = new MemoryStream(data))
+            // See RFC 1950 (https://tools.ietf.org/html/rfc1950)
+            // zlib adds a header to DEFLATE streams - usually 2 bytes,
+            // but can be 6 bytes if FDICT is set.
+            // There's also 4 checksum bytes at the end of the stream.
+
+            var zlibCmf = data[0];
+            if ((zlibCmf & 0x0F) != 0x08) throw new NotSupportedException("Only the DEFLATE algorithm is supported for zlib data.");
+
+            const int zlibFooter = 4;
+            var zlibHeader = 2;
+
+            // If the FDICT bit (0x20) is 1, then the 4-byte dictionary is included in the header, we need to skip it
+            var zlibFlg = data[1];
+            if ((zlibFlg & 0x20) == 0x20) zlibHeader += 4;
+
+            using (var ms = new MemoryStream(data, zlibHeader, data.Length - (zlibHeader + zlibFooter)))
             {
                 using (var ds = new DeflateStream(ms, CompressionMode.Decompress))
                 {
