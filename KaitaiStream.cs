@@ -97,6 +97,8 @@ namespace Kaitai
             return bytes;
         }
 
+        #region Integer types
+
         /// <summary>
         /// Read an unsigned byte from the stream
         /// </summary>
@@ -222,6 +224,48 @@ namespace Kaitai
         {
             return BitConverter.ToInt64(ReadBytesNormalisedBigEndian(8), 0);
         }
+
+        #endregion
+
+        #region Floating point types
+
+        /// <summary>
+        /// Read a single-precision floating point value from the stream (little endian)
+        /// </summary>
+        /// <returns></returns>
+        public float ReadF4le()
+        {
+            return BitConverter.ToSingle(ReadBytesNormalisedLittleEndian(4), 0);
+        }
+
+        /// <summary>
+        /// Read a double-precision floating point value from the stream (little endian)
+        /// </summary>
+        /// <returns></returns>
+        public double ReadF8le()
+        {
+            return BitConverter.ToDouble(ReadBytesNormalisedLittleEndian(8), 0);
+        }
+
+        /// <summary>
+        /// Read a single-precision floating point value from the stream (big endian)
+        /// </summary>
+        /// <returns></returns>
+        public float ReadF4be()
+        {
+            return BitConverter.ToSingle(ReadBytesNormalisedBigEndian(4), 0);
+        }
+
+        /// <summary>
+        /// Read a double-precision floating point value from the stream (big endian)
+        /// </summary>
+        /// <returns></returns>
+        public double ReadF8be()
+        {
+            return BitConverter.ToDouble(ReadBytesNormalisedBigEndian(8), 0);
+        }
+
+        #endregion
 
         /// <summary>
         /// Read all the remaining bytes from the stream until the end is reached
