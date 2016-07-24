@@ -366,12 +366,36 @@ namespace Kaitai
             return r;
         }
 
-        public byte[] ProcessXorInt(byte[] value, int xorValue)
+        /// <summary>
+        /// Performs XOR processing with given data, XORing every byte of the input with a single value.
+        /// </summary>
+        /// <param name="value">The data toe process</param>
+        /// <param name="key">The key value to XOR with</param>
+        /// <returns>Processed data</returns>
+        public byte[] ProcessXor(byte[] value, int key)
         {
             var result = new byte[value.Length];
             for (int i = 0; i < value.Length; i++)
             {
-                result[i] = (byte) (value[i] ^ xorValue);
+                result[i] = (byte)(value[i] ^ key);
+            }
+            return result;
+        }
+
+        /// <summary>
+        /// Performs XOR processing with given data, XORing every byte of the input with a key
+        /// array, repeating from the beginning of the key array if necessary
+        /// </summary>
+        /// <param name="value">The data toe process</param>
+        /// <param name="key">The key array to XOR with</param>
+        /// <returns>Processed data</returns>
+        public byte[] ProcessXor(byte[] value, byte[] key)
+        {
+            var keyLen = key.Length;
+            var result = new byte[value.Length];
+            for (int i = 0, j = 0; i < value.Length; i++, j = (j + 1) % keyLen)
+            {
+                result[i] = (byte)(value[i] ^ key[j]);
             }
             return result;
         }
