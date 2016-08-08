@@ -86,7 +86,10 @@ namespace Kaitai
         /// <returns></returns>
         public byte[] ReadBytes(long count)
         {
-            return base.ReadBytes((int)count);
+            var bytes = base.ReadBytes((int) count);
+            if (bytes.Length < count)
+                throw new EndOfStreamException("requested " + count + " bytes, but got only " + bytes.Length + " bytes");
+            return bytes;
         }
 
         /// <summary>
