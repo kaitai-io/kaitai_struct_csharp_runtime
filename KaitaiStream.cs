@@ -36,13 +36,15 @@ namespace Kaitai
 
         #endregion
 
+        #region Stream positioning
+
         /// <summary>
-        /// Get the current position in the stream
+        /// Check if the stream position is at the end of the stream
         /// </summary>
-        /// <returns></returns>
-        public long Pos()
+        /// <returns>True if the pointer is at the end of the stream</returns>
+        public bool IsEof()
         {
-            return BaseStream.Position;
+            return BaseStream.Position >= BaseStream.Length;
         }
 
         /// <summary>
@@ -55,13 +57,27 @@ namespace Kaitai
         }
 
         /// <summary>
-        /// Check if the stream position is at the end of the stream
+        /// Get the current position in the stream
         /// </summary>
-        /// <returns>True if the pointer is at the end of the stream</returns>
-        public bool IsEof()
+        /// <returns></returns>
+        public long Pos()
         {
-            return BaseStream.Position >= BaseStream.Length;
+            return BaseStream.Position;
         }
+
+        /// <summary>
+        /// Get the total length of the stream
+        /// </summary>
+        /// <returns></returns>
+        public long Size
+        {
+            get
+            {
+                return BaseStream.Length;
+            }
+        }
+
+        #endregion
 
         /// <summary>
         /// Read a fixed number of bytes from the stream
