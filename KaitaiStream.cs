@@ -60,9 +60,11 @@ namespace Kaitai
         /// Get the current position in the stream
         /// </summary>
         /// <returns></returns>
-        public long Pos()
+        public long Pos
         {
-            return BaseStream.Position;
+            get {
+                return BaseStream.Position;
+            }
         }
 
         /// <summary>
@@ -362,7 +364,7 @@ namespace Kaitai
                 if (b == terminator)
                 {
                     if (includeTerminator) bytes.Add(b);
-                    if (!consumeTerminator) Seek(Pos() - 1);
+                    if (!consumeTerminator) Seek(Pos - 1);
                     break;
                 }
                 bytes.Add(b);
