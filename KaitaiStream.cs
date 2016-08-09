@@ -249,24 +249,6 @@ namespace Kaitai
         #region Floating point types
 
         /// <summary>
-        /// Read a single-precision floating point value from the stream (little endian)
-        /// </summary>
-        /// <returns></returns>
-        public float ReadF4le()
-        {
-            return BitConverter.ToSingle(ReadBytesNormalisedLittleEndian(4), 0);
-        }
-
-        /// <summary>
-        /// Read a double-precision floating point value from the stream (little endian)
-        /// </summary>
-        /// <returns></returns>
-        public double ReadF8le()
-        {
-            return BitConverter.ToDouble(ReadBytesNormalisedLittleEndian(8), 0);
-        }
-
-        /// <summary>
         /// Read a single-precision floating point value from the stream (big endian)
         /// </summary>
         /// <returns></returns>
@@ -282,6 +264,24 @@ namespace Kaitai
         public double ReadF8be()
         {
             return BitConverter.ToDouble(ReadBytesNormalisedBigEndian(8), 0);
+        }
+
+        /// <summary>
+        /// Read a single-precision floating point value from the stream (little endian)
+        /// </summary>
+        /// <returns></returns>
+        public float ReadF4le()
+        {
+            return BitConverter.ToSingle(ReadBytesNormalisedLittleEndian(4), 0);
+        }
+
+        /// <summary>
+        /// Read a double-precision floating point value from the stream (little endian)
+        /// </summary>
+        /// <returns></returns>
+        public double ReadF8le()
+        {
+            return BitConverter.ToDouble(ReadBytesNormalisedLittleEndian(8), 0);
         }
 
         #endregion
@@ -364,6 +364,72 @@ namespace Kaitai
             return System.Text.Encoding.GetEncoding(encoding).GetString(bytes.ToArray());
         }
 
+        #region Byte array processing
+
+        /// <summary>
+        /// Performs XOR processing with given data, XORing every byte of the input with a single value.
+        /// </summary>
+        /// <param name="value">The data toe process</param>
+        /// <param name="key">The key value to XOR with</param>
+        /// <returns>Processed data</returns>
+        public byte[] ProcessXor(byte[] value, int key)
+        {
+            var result = new byte[value.Length];
+            for (int i = 0; i < value.Length; i++)
+            {
+                result[i] = (byte)(value[i] ^ key);
+            }
+            return result;
+        }
+
+        /// <summary>
+        /// Performs XOR processing with given data, XORing every byte of the input with a key
+        /// array, repeating from the beginning of the key array if necessary
+        /// </summary>
+        /// <param name="value">The data toe process</param>
+        /// <param name="key">The key array to XOR with</param>
+        /// <returns>Processed data</returns>
+        public byte[] ProcessXor(byte[] value, byte[] key)
+        {
+            var keyLen = key.Length;
+            var result = new byte[value.Length];
+            for (int i = 0, j = 0; i < value.Length; i++, j = (j + 1) % keyLen)
+            {
+                result[i] = (byte)(value[i] ^ key[j]);
+            }
+            return result;
+        }
+
+        /// <summary>
+        /// Performs a circular left rotation shift for a given buffer by a given amount of bits.
+        /// Pass a negative amount to rotate right.
+        /// </summary>
+        /// <param name="data">The data to rotate</param>
+        /// <param name="amount">The number of bytes to rotate by</param>
+        /// <param name="groupSize"></param>
+        /// <returns></returns>
+        public byte[] ProcessRotateLeft(byte[] data, int amount, int groupSize)
+        {
+            if (amount > 7 || amount < -7) throw new ArgumentException("Rotation of more than 7 cannot be performed.", nameof(amount));
+            if (amount < 0) amount += 8; // Rotation of -2 is the same as rotation of +6
+
+            var r = new byte[data.Length];
+            switch (groupSize)
+            {
+                case 1:
+                    for (var i = 0; i < data.Length; i++)
+                    {
+                        var bits = data[i];
+                        // http://stackoverflow.com/a/812039
+                        r[i] = (byte) ((bits << amount) | (bits >> (8 - amount)));
+                    }
+                    break;
+                default:
+                    throw new NotImplementedException($"Unable to rotate a group of {groupSize} bytes yet");
+            }
+            return r;
+        }
+
         /// <summary>
         /// Inflates a deflated zlib byte stream
         /// </summary>
@@ -399,68 +465,6 @@ namespace Kaitai
             }
         }
 
-        /// <summary>
-        /// Performs a circular left rotation shift for a given buffer by a given amount of bits.
-        /// Pass a negative amount to rotate right.
-        /// </summary>
-        /// <param name="data">The data to rotate</param>
-        /// <param name="amount">The number of bytes to rotate by</param>
-        /// <param name="groupSize"></param>
-        /// <returns></returns>
-        public byte[] ProcessRotateLeft(byte[] data, int amount, int groupSize)
-        {
-            if (amount > 7 || amount < -7) throw new ArgumentException("Rotation of more than 7 cannot be performed.", nameof(amount));
-            if (amount < 0) amount += 8; // Rotation of -2 is the same as rotation of +6
-
-            var r = new byte[data.Length];
-            switch (groupSize)
-            {
-                case 1:
-                    for (var i = 0; i < data.Length; i++)
-                    {
-                        var bits = data[i];
-                        // http://stackoverflow.com/a/812039
-                        r[i] = (byte) ((bits << amount) | (bits >> (8 - amount)));
-                    }
-                    break;
-                default:
-                    throw new NotImplementedException($"Unable to rotate a group of {groupSize} bytes yet");
-            }
-            return r;
-        }
-
-        /// <summary>
-        /// Performs XOR processing with given data, XORing every byte of the input with a single value.
-        /// </summary>
-        /// <param name="value">The data toe process</param>
-        /// <param name="key">The key value to XOR with</param>
-        /// <returns>Processed data</returns>
-        public byte[] ProcessXor(byte[] value, int key)
-        {
-            var result = new byte[value.Length];
-            for (int i = 0; i < value.Length; i++)
-            {
-                result[i] = (byte)(value[i] ^ key);
-            }
-            return result;
-        }
-
-        /// <summary>
-        /// Performs XOR processing with given data, XORing every byte of the input with a key
-        /// array, repeating from the beginning of the key array if necessary
-        /// </summary>
-        /// <param name="value">The data toe process</param>
-        /// <param name="key">The key array to XOR with</param>
-        /// <returns>Processed data</returns>
-        public byte[] ProcessXor(byte[] value, byte[] key)
-        {
-            var keyLen = key.Length;
-            var result = new byte[value.Length];
-            for (int i = 0, j = 0; i < value.Length; i++, j = (j + 1) % keyLen)
-            {
-                result[i] = (byte)(value[i] ^ key[j]);
-            }
-            return result;
-        }
+        #endregion
     }
 }
