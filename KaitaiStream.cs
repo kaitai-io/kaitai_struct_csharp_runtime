@@ -79,43 +79,6 @@ namespace Kaitai
 
         #endregion
 
-        /// <summary>
-        /// Read a fixed number of bytes from the stream
-        /// </summary>
-        /// <param name="count">The number of bytes to read</param>
-        /// <returns></returns>
-        public byte[] ReadBytes(long count)
-        {
-            var bytes = base.ReadBytes((int) count);
-            if (bytes.Length < count)
-                throw new EndOfStreamException("requested " + count + " bytes, but got only " + bytes.Length + " bytes");
-            return bytes;
-        }
-
-        /// <summary>
-        /// Read bytes from the stream in little endian format and convert them to the endianness of the current platform
-        /// </summary>
-        /// <param name="count">The number of bytes to read</param>
-        /// <returns>An array of bytes that matches the endianness of the current platform</returns>
-        protected byte[] ReadBytesNormalisedLittleEndian(int count)
-        {
-            var bytes = ReadBytes(count);
-            if (!BitConverter.IsLittleEndian) Array.Reverse(bytes);
-            return bytes;
-        }
-
-        /// <summary>
-        /// Read bytes from the stream in big endian format and convert them to the endianness of the current platform
-        /// </summary>
-        /// <param name="count">The number of bytes to read</param>
-        /// <returns>An array of bytes that matches the endianness of the current platform</returns>
-        protected byte[] ReadBytesNormalisedBigEndian(int count)
-        {
-            var bytes = ReadBytes(count);
-            if (BitConverter.IsLittleEndian) Array.Reverse(bytes);
-            return bytes;
-        }
-
         #region Integer types
 
         /// <summary>
@@ -286,6 +249,45 @@ namespace Kaitai
 
         #endregion
 
+        #region Byte arrays
+
+        /// <summary>
+        /// Read a fixed number of bytes from the stream
+        /// </summary>
+        /// <param name="count">The number of bytes to read</param>
+        /// <returns></returns>
+        public byte[] ReadBytes(long count)
+        {
+            var bytes = base.ReadBytes((int) count);
+            if (bytes.Length < count)
+                throw new EndOfStreamException("requested " + count + " bytes, but got only " + bytes.Length + " bytes");
+            return bytes;
+        }
+
+        /// <summary>
+        /// Read bytes from the stream in little endian format and convert them to the endianness of the current platform
+        /// </summary>
+        /// <param name="count">The number of bytes to read</param>
+        /// <returns>An array of bytes that matches the endianness of the current platform</returns>
+        protected byte[] ReadBytesNormalisedLittleEndian(int count)
+        {
+            var bytes = ReadBytes(count);
+            if (!BitConverter.IsLittleEndian) Array.Reverse(bytes);
+            return bytes;
+        }
+
+        /// <summary>
+        /// Read bytes from the stream in big endian format and convert them to the endianness of the current platform
+        /// </summary>
+        /// <param name="count">The number of bytes to read</param>
+        /// <returns>An array of bytes that matches the endianness of the current platform</returns>
+        protected byte[] ReadBytesNormalisedBigEndian(int count)
+        {
+            var bytes = ReadBytes(count);
+            if (BitConverter.IsLittleEndian) Array.Reverse(bytes);
+            return bytes;
+        }
+
         /// <summary>
         /// Read all the remaining bytes from the stream until the end is reached
         /// </summary>
@@ -310,6 +312,10 @@ namespace Kaitai
             }
             return bytes;
         }
+
+        #endregion
+
+        #region Strings
 
         /// <summary>
         /// Read a string until the end of the stream is reached
@@ -363,6 +369,8 @@ namespace Kaitai
             }
             return System.Text.Encoding.GetEncoding(encoding).GetString(bytes.ToArray());
         }
+
+        #endregion
 
         #region Byte array processing
 
