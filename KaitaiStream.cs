@@ -83,14 +83,7 @@ namespace Kaitai
 
         #region Integer types
 
-        /// <summary>
-        /// Read an unsigned byte from the stream
-        /// </summary>
-        /// <returns></returns>
-        public byte ReadU1()
-        {
-            return ReadByte();
-        }
+        #region Signed
 
         /// <summary>
         /// Read a signed byte from the stream
@@ -101,68 +94,7 @@ namespace Kaitai
             return ReadSByte();
         }
 
-        /// <summary>
-        /// Read an unsigned short from the stream (little endian)
-        /// </summary>
-        /// <returns></returns>
-        public ushort ReadU2le()
-        {
-            return BitConverter.ToUInt16(ReadBytesNormalisedLittleEndian(2), 0);
-        }
-
-        /// <summary>
-        /// Read a signed short from the stream (little endian)
-        /// </summary>
-        /// <returns></returns>
-        public short ReadS2le()
-        {
-            return BitConverter.ToInt16(ReadBytesNormalisedLittleEndian(2), 0);
-        }
-
-        /// <summary>
-        /// Read an unsigned int from the stream (little endian)
-        /// </summary>
-        /// <returns></returns>
-        public uint ReadU4le()
-        {
-            return BitConverter.ToUInt32(ReadBytesNormalisedLittleEndian(4), 0);
-        }
-
-        /// <summary>
-        /// Read a signed int from the stream (little endian)
-        /// </summary>
-        /// <returns></returns>
-        public int ReadS4le()
-        {
-            return BitConverter.ToInt32(ReadBytesNormalisedLittleEndian(4), 0);
-        }
-
-        /// <summary>
-        /// Read an unsigned long from the stream (little endian)
-        /// </summary>
-        /// <returns></returns>
-        public ulong ReadU8le()
-        {
-            return BitConverter.ToUInt64(ReadBytesNormalisedLittleEndian(8), 0);
-        }
-
-        /// <summary>
-        /// Read a signed long from the stream (little endian)
-        /// </summary>
-        /// <returns></returns>
-        public long ReadS8le()
-        {
-            return BitConverter.ToInt64(ReadBytesNormalisedLittleEndian(8), 0);
-        }
-
-        /// <summary>
-        /// Read an unsigned short from the stream (big endian)
-        /// </summary>
-        /// <returns></returns>
-        public ushort ReadU2be()
-        {
-            return BitConverter.ToUInt16(ReadBytesNormalisedBigEndian(2), 0);
-        }
+        #region Big-endian
 
         /// <summary>
         /// Read a signed short from the stream (big endian)
@@ -174,30 +106,12 @@ namespace Kaitai
         }
 
         /// <summary>
-        /// Read an unsigned int from the stream (big endian)
-        /// </summary>
-        /// <returns></returns>
-        public uint ReadU4be()
-        {
-            return BitConverter.ToUInt32(ReadBytesNormalisedBigEndian(4), 0);
-        }
-
-        /// <summary>
         /// Read a signed int from the stream (big endian)
         /// </summary>
         /// <returns></returns>
         public int ReadS4be()
         {
             return BitConverter.ToInt32(ReadBytesNormalisedBigEndian(4), 0);
-        }
-
-        /// <summary>
-        /// Read an unsigned long from the stream (big endian)
-        /// </summary>
-        /// <returns></returns>
-        public ulong ReadU8be()
-        {
-            return BitConverter.ToUInt64(ReadBytesNormalisedBigEndian(8), 0);
         }
 
         /// <summary>
@@ -211,7 +125,119 @@ namespace Kaitai
 
         #endregion
 
+        #region Little-endian
+
+        /// <summary>
+        /// Read a signed short from the stream (little endian)
+        /// </summary>
+        /// <returns></returns>
+        public short ReadS2le()
+        {
+            return BitConverter.ToInt16(ReadBytesNormalisedLittleEndian(2), 0);
+        }
+
+        /// <summary>
+        /// Read a signed int from the stream (little endian)
+        /// </summary>
+        /// <returns></returns>
+        public int ReadS4le()
+        {
+            return BitConverter.ToInt32(ReadBytesNormalisedLittleEndian(4), 0);
+        }
+
+        /// <summary>
+        /// Read a signed long from the stream (little endian)
+        /// </summary>
+        /// <returns></returns>
+        public long ReadS8le()
+        {
+            return BitConverter.ToInt64(ReadBytesNormalisedLittleEndian(8), 0);
+        }
+
+        #endregion
+
+        #endregion
+
+        #region Unsigned
+
+        /// <summary>
+        /// Read an unsigned byte from the stream
+        /// </summary>
+        /// <returns></returns>
+        public byte ReadU1()
+        {
+            return ReadByte();
+        }
+
+        #region Big-endian
+
+        /// <summary>
+        /// Read an unsigned short from the stream (big endian)
+        /// </summary>
+        /// <returns></returns>
+        public ushort ReadU2be()
+        {
+            return BitConverter.ToUInt16(ReadBytesNormalisedBigEndian(2), 0);
+        }
+
+        /// <summary>
+        /// Read an unsigned int from the stream (big endian)
+        /// </summary>
+        /// <returns></returns>
+        public uint ReadU4be()
+        {
+            return BitConverter.ToUInt32(ReadBytesNormalisedBigEndian(4), 0);
+        }
+
+        /// <summary>
+        /// Read an unsigned long from the stream (big endian)
+        /// </summary>
+        /// <returns></returns>
+        public ulong ReadU8be()
+        {
+            return BitConverter.ToUInt64(ReadBytesNormalisedBigEndian(8), 0);
+        }
+
+        #endregion
+
+        #region Little-endian
+
+        /// <summary>
+        /// Read an unsigned short from the stream (little endian)
+        /// </summary>
+        /// <returns></returns>
+        public ushort ReadU2le()
+        {
+            return BitConverter.ToUInt16(ReadBytesNormalisedLittleEndian(2), 0);
+        }
+
+        /// <summary>
+        /// Read an unsigned int from the stream (little endian)
+        /// </summary>
+        /// <returns></returns>
+        public uint ReadU4le()
+        {
+            return BitConverter.ToUInt32(ReadBytesNormalisedLittleEndian(4), 0);
+        }
+
+        /// <summary>
+        /// Read an unsigned long from the stream (little endian)
+        /// </summary>
+        /// <returns></returns>
+        public ulong ReadU8le()
+        {
+            return BitConverter.ToUInt64(ReadBytesNormalisedLittleEndian(8), 0);
+        }
+
+        #endregion
+
+        #endregion
+
+        #endregion
+
         #region Floating point types
+
+        #region Big-endian
 
         /// <summary>
         /// Read a single-precision floating point value from the stream (big endian)
@@ -231,6 +257,10 @@ namespace Kaitai
             return BitConverter.ToDouble(ReadBytesNormalisedBigEndian(8), 0);
         }
 
+        #endregion
+
+        #region Little-endian
+
         /// <summary>
         /// Read a single-precision floating point value from the stream (little endian)
         /// </summary>
@@ -248,6 +278,8 @@ namespace Kaitai
         {
             return BitConverter.ToDouble(ReadBytesNormalisedLittleEndian(8), 0);
         }
+
+        #endregion
 
         #endregion
 
