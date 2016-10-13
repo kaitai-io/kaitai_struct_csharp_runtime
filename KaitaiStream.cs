@@ -530,6 +530,25 @@ namespace Kaitai
             return r;
         }
 
+        /// <summary>
+        /// Performs modulo operation between two integers.
+        /// </summary>
+        /// <remarks>
+        /// This method is required because C# lacks a "true" modulo
+        /// operator, the % operator rather being the "remainder"
+        /// operator. We want mod operations to always be positive.
+        /// </remarks>
+        /// <param name="a">The value to be divided</param>
+        /// <param name="b">The value to divide by. Must be greater than zero.</param>
+        /// <returns>The result of the modulo opertion. Will always be positive.</returns>
+        public static long Mod(long a, long b)
+        {
+            if (b <= 0) throw new ArgumentException("Divisor of mod operation must be greater than zero.", nameof(b));
+            var r = a % b;
+            if (r < 0) r += b;
+            return r;
+        }
+
         #endregion
     }
 }
