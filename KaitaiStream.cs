@@ -41,11 +41,7 @@ namespace Kaitai
         /// <summary>
         /// Check if the stream position is at the end of the stream
         /// </summary>
-        /// <returns>True if the pointer is at the end of the stream</returns>
-        public bool IsEof()
-        {
-            return BaseStream.Position >= BaseStream.Length;
-        }
+        public bool IsEof => BaseStream.Position >= BaseStream.Length;
 
         /// <summary>
         /// Seek to a specific position from the beginning of the stream
@@ -59,25 +55,12 @@ namespace Kaitai
         /// <summary>
         /// Get the current position in the stream
         /// </summary>
-        /// <returns></returns>
-        public long Pos
-        {
-            get {
-                return BaseStream.Position;
-            }
-        }
+        public long Pos => BaseStream.Position;
 
         /// <summary>
         /// Get the total length of the stream
         /// </summary>
-        /// <returns></returns>
-        public long Size
-        {
-            get
-            {
-                return BaseStream.Length;
-            }
-        }
+        public long Size => BaseStream.Length;
 
         #endregion
 
@@ -386,7 +369,7 @@ namespace Kaitai
             var bytes = new System.Collections.Generic.List<byte>();
             while (true)
             {
-                if (IsEof())
+                if (IsEof)
                 {
                     if (eosError) throw new EndOfStreamException($"End of stream reached, but no terminator `{terminator}` found");
                     break;
