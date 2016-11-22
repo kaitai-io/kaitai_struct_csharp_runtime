@@ -317,12 +317,11 @@ namespace Kaitai
         /// <summary>
         /// Read a specific set of bytes and assert that they are the same as an expected result
         /// </summary>
-        /// <param name="length">The number of bytes to read</param>
         /// <param name="expected">The expected result</param>
         /// <returns></returns>
-        public byte[] EnsureFixedContents(int length, byte[] expected)
+        public byte[] EnsureFixedContents(byte[] expected)
         {
-            var bytes = ReadBytes(length);
+            var bytes = ReadBytes(expected.Length);
             if (!bytes.SequenceEqual(expected))
             {
                 throw new Exception($"Expected bytes: {Convert.ToBase64String(expected)}, Instead got: {Convert.ToBase64String(bytes)}");
