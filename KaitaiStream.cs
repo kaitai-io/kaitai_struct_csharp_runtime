@@ -34,6 +34,9 @@ namespace Kaitai
 
         }
 
+        private ulong Bits = 0;
+        private int BitsLeft = 0;
+
         #endregion
 
         #region Stream positioning
@@ -263,6 +266,40 @@ namespace Kaitai
         }
 
         #endregion
+
+        #endregion
+
+        #region Unaligned bit values
+
+        public ulong ReadBitsInt(int n) {
+            int bitsNeeded = n - BitsLeft;
+            if (bitsNeeded > 0) {
+                // 1 bit  => 1 byte
+                // 8 bits => 1 byte
+                // 9 bits => 2 bytes
+                int bytesNeeded = ((bitsNeeded - 1) / 8) + 1;
+                byte[] buf = ReadBytes(bytesNeeded);
+                for (int i = 0; i < buf.Length; i++) {
+                    Bits <<= 8;
+                    Bits |= buf[i];
+                    BitsLeft += 8;
+                }
+            }
+
+            // raw mask with required number of 1s, starting from lowest bit
+            ulong mask = (1UL << n) - 1;
+            // shift mask to align with highest bits available in "bits"
+            int shiftBits = BitsLeft - n;
+            mask = mask << shiftBits;
+            // derive reading result
+            ulong res = (Bits & mask) >> shiftBits;
+            // clear top bits that we've just read => AND with 1s
+            BitsLeft -= n;
+            mask = (1UL << BitsLeft) - 1;
+            Bits &= mask;
+
+            return res;
+        }
 
         #endregion
 
