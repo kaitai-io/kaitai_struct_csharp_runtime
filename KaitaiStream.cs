@@ -271,15 +271,24 @@ namespace Kaitai
 
         #region Unaligned bit values
 
-        public ulong ReadBitsInt(int n) {
+        public void AlignToByte()
+        {
+            Bits = 0;
+            BitsLeft = 0;
+        }
+
+        public ulong ReadBitsInt(int n)
+        {
             int bitsNeeded = n - BitsLeft;
-            if (bitsNeeded > 0) {
+            if (bitsNeeded > 0)
+            {
                 // 1 bit  => 1 byte
                 // 8 bits => 1 byte
                 // 9 bits => 2 bytes
                 int bytesNeeded = ((bitsNeeded - 1) / 8) + 1;
                 byte[] buf = ReadBytes(bytesNeeded);
-                for (int i = 0; i < buf.Length; i++) {
+                for (int i = 0; i < buf.Length; i++)
+                {
                     Bits <<= 8;
                     Bits |= buf[i];
                     BitsLeft += 8;
