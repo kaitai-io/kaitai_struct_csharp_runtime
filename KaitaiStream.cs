@@ -361,55 +361,14 @@ namespace Kaitai
         }
 
         /// <summary>
-        /// Read a specific set of bytes and assert that they are the same as an expected result
-        /// </summary>
-        /// <param name="expected">The expected result</param>
-        /// <returns></returns>
-        public byte[] EnsureFixedContents(byte[] expected)
-        {
-            var bytes = ReadBytes(expected.Length);
-            if (!bytes.SequenceEqual(expected))
-            {
-                throw new Exception($"Expected bytes: {Convert.ToBase64String(expected)}, Instead got: {Convert.ToBase64String(bytes)}");
-            }
-            return bytes;
-        }
-
-        #endregion
-
-        #region Strings
-
-        /// <summary>
-        /// Read a string until the end of the stream is reached
-        /// </summary>
-        /// <param name="encoding">The string encoding to use</param>
-        /// <returns></returns>
-        public string ReadStrEos(string encoding)
-        {
-            return System.Text.Encoding.GetEncoding(encoding).GetString(ReadBytesFull());
-        }
-
-        /// <summary>
-        /// Read a string of a specific length from the stream
-        /// </summary>
-        /// <param name="length">The number of bytes to read</param>
-        /// <param name="encoding">The string encoding to use</param>
-        /// <returns></returns>
-        public string ReadStrByteLimit(long length, string encoding)
-        {
-            return System.Text.Encoding.GetEncoding(encoding).GetString(ReadBytes(length));
-        }
-
-        /// <summary>
         /// Read a terminated string from the stream
         /// </summary>
-        /// <param name="encoding">The string encoding to use</param>
         /// <param name="terminator">The string terminator value</param>
         /// <param name="includeTerminator">True to include the terminator in the returned string</param>
         /// <param name="consumeTerminator">True to consume the terminator byte before returning</param>
         /// <param name="eosError">True to throw an error when the EOS was reached before the terminator</param>
         /// <returns></returns>
-        public string ReadStrz(string encoding, byte terminator, bool includeTerminator, bool consumeTerminator, bool eosError)
+        public byte[] ReadBytesTerm(byte terminator, bool includeTerminator, bool consumeTerminator, bool eosError)
         {
             var bytes = new System.Collections.Generic.List<byte>();
             while (true)
@@ -429,7 +388,22 @@ namespace Kaitai
                 }
                 bytes.Add(b);
             }
-            return System.Text.Encoding.GetEncoding(encoding).GetString(bytes.ToArray());
+            return bytes.ToArray();
+        }
+
+        /// <summary>
+        /// Read a specific set of bytes and assert that they are the same as an expected result
+        /// </summary>
+        /// <param name="expected">The expected result</param>
+        /// <returns></returns>
+        public byte[] EnsureFixedContents(byte[] expected)
+        {
+            var bytes = ReadBytes(expected.Length);
+            if (!bytes.SequenceEqual(expected))
+            {
+                throw new Exception($"Expected bytes: {Convert.ToBase64String(expected)}, Instead got: {Convert.ToBase64String(bytes)}");
+            }
+            return bytes;
         }
 
         #endregion
