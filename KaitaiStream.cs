@@ -425,6 +425,9 @@ namespace Kaitai
             while (newLen < maxLen && src[newLen] != terminator)
                 newLen++;
 
+            if (includeTerminator && newLen < maxLen)
+                newLen++;
+
             byte[] dst = new byte[newLen];
             Array.Copy(src, dst, newLen);
             return dst;
