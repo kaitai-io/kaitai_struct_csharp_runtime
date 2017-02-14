@@ -406,6 +406,30 @@ namespace Kaitai
             return bytes;
         }
 
+        public static byte[] BytesStripRight(byte[] src, byte padByte)
+        {
+            int newLen = src.Length;
+            while (src[newLen - 1] == padByte)
+                newLen--;
+
+            byte[] dst = new byte[newLen];
+            Array.Copy(src, dst, newLen);
+            return dst;
+        }
+
+        public static byte[] BytesTerminate(byte[] src, byte terminator, bool includeTerminator)
+        {
+            int newLen = 0;
+            int maxLen = src.Length;
+
+            while (newLen < maxLen && src[newLen] != terminator)
+                newLen++;
+
+            byte[] dst = new byte[newLen];
+            Array.Copy(src, dst, newLen);
+            return dst;
+        }
+
         #endregion
 
         #region Byte array processing
