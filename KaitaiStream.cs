@@ -296,7 +296,7 @@ namespace Kaitai
             }
 
             // raw mask with required number of 1s, starting from lowest bit
-            ulong mask = (1UL << n) - 1;
+            ulong mask = GetMaskOnes(n);
             // shift mask to align with highest bits available in "bits"
             int shiftBits = BitsLeft - n;
             mask = mask << shiftBits;
@@ -304,10 +304,22 @@ namespace Kaitai
             ulong res = (Bits & mask) >> shiftBits;
             // clear top bits that we've just read => AND with 1s
             BitsLeft -= n;
-            mask = (1UL << BitsLeft) - 1;
+            mask = GetMaskOnes(BitsLeft);
             Bits &= mask;
 
             return res;
+        }
+
+        private static ulong GetMaskOnes(int n)
+        {
+            if (n == 64)
+            {
+                return 0xffffffffffffffffUL;
+            }
+            else
+            {
+                return (1UL << n) - 1;
+            }
         }
 
         #endregion
