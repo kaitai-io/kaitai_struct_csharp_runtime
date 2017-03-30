@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
@@ -44,7 +45,10 @@ namespace Kaitai
         /// <summary>
         /// Check if the stream position is at the end of the stream
         /// </summary>
-        public bool IsEof => BaseStream.Position >= BaseStream.Length;
+        public bool IsEof
+        {
+            get { return BaseStream.Position >= BaseStream.Length; }
+        }
 
         /// <summary>
         /// Seek to a specific position from the beginning of the stream
@@ -58,12 +62,18 @@ namespace Kaitai
         /// <summary>
         /// Get the current position in the stream
         /// </summary>
-        public long Pos => BaseStream.Position;
+        public long Pos
+        {
+            get { return BaseStream.Position; }
+        }
 
         /// <summary>
         /// Get the total length of the stream
         /// </summary>
-        public long Size => BaseStream.Length;
+        public long Size
+        {
+            get { return BaseStream.Length; }
+        }
 
         #endregion
 
@@ -333,7 +343,7 @@ namespace Kaitai
         /// <returns></returns>
         public byte[] ReadBytes(long count)
         {
-            var bytes = base.ReadBytes((int) count);
+            byte[] bytes = base.ReadBytes((int) count);
             if (bytes.Length < count)
                 throw new EndOfStreamException("requested " + count + " bytes, but got only " + bytes.Length + " bytes");
             return bytes;
@@ -346,7 +356,7 @@ namespace Kaitai
         /// <returns>An array of bytes that matches the endianness of the current platform</returns>
         protected byte[] ReadBytesNormalisedLittleEndian(int count)
         {
-            var bytes = ReadBytes(count);
+            byte[] bytes = ReadBytes(count);
             if (!BitConverter.IsLittleEndian) Array.Reverse(bytes);
             return bytes;
         }
@@ -358,7 +368,7 @@ namespace Kaitai
         /// <returns>An array of bytes that matches the endianness of the current platform</returns>
         protected byte[] ReadBytesNormalisedBigEndian(int count)
         {
-            var bytes = ReadBytes(count);
+            byte[] bytes = ReadBytes(count);
             if (BitConverter.IsLittleEndian) Array.Reverse(bytes);
             return bytes;
         }
@@ -382,16 +392,16 @@ namespace Kaitai
         /// <returns></returns>
         public byte[] ReadBytesTerm(byte terminator, bool includeTerminator, bool consumeTerminator, bool eosError)
         {
-            var bytes = new System.Collections.Generic.List<byte>();
+            List<byte> bytes = new System.Collections.Generic.List<byte>();
             while (true)
             {
                 if (IsEof)
                 {
-                    if (eosError) throw new EndOfStreamException($"End of stream reached, but no terminator `{terminator}` found");
+                    if (eosError) throw new EndOfStreamException(string.Format("End of stream reached, but no terminator `{0}` found", terminator));
                     break;
                 }
 
-                var b = ReadByte();
+                byte b = ReadByte();
                 if (b == terminator)
                 {
                     if (includeTerminator) bytes.Add(b);
@@ -410,10 +420,25 @@ namespace Kaitai
         /// <returns></returns>
         public byte[] EnsureFixedContents(byte[] expected)
         {
-            var bytes = ReadBytes(expected.Length);
-            if (!bytes.SequenceEqual(expected))
+            byte[] bytes = ReadBytes(expected.Length);
+            bool error = false;
+            if (bytes.Length == expected.Length)
             {
-                throw new Exception($"Expected bytes: {Convert.ToBase64String(expected)}, Instead got: {Convert.ToBase64String(bytes)}");
+                for (int i = 0; i < bytes.Length; i++)
+                {
+                    if (bytes[i] != expected[i])
+                    {
+                        error = true;
+                    }
+                }
+            }
+            else
+            {
+                error = true;
+            }
+            if (error)
+            {
+                throw new Exception(string.Format("Expected bytes: {0}, Instead got: {1}", Convert.ToBase64String(expected), Convert.ToBase64String(bytes)));
             }
             return bytes;
         }
@@ -457,7 +482,7 @@ namespace Kaitai
         /// <returns>Processed data</returns>
         public byte[] ProcessXor(byte[] value, int key)
         {
-            var result = new byte[value.Length];
+            byte[] result = new byte[value.Length];
             for (int i = 0; i < value.Length; i++)
             {
                 result[i] = (byte)(value[i] ^ key);
@@ -474,8 +499,8 @@ namespace Kaitai
         /// <returns>Processed data</returns>
         public byte[] ProcessXor(byte[] value, byte[] key)
         {
-            var keyLen = key.Length;
-            var result = new byte[value.Length];
+            int keyLen = key.Length;
+            byte[] result = new byte[value.Length];
             for (int i = 0, j = 0; i < value.Length; i++, j = (j + 1) % keyLen)
             {
                 result[i] = (byte)(value[i] ^ key[j]);
@@ -493,22 +518,22 @@ namespace Kaitai
         /// <returns></returns>
         public byte[] ProcessRotateLeft(byte[] data, int amount, int groupSize)
         {
-            if (amount > 7 || amount < -7) throw new ArgumentException("Rotation of more than 7 cannot be performed.", nameof(amount));
+            if (amount > 7 || amount < -7) throw new ArgumentException("Rotation of more than 7 cannot be performed.", "amount");
             if (amount < 0) amount += 8; // Rotation of -2 is the same as rotation of +6
 
-            var r = new byte[data.Length];
+            byte[] r = new byte[data.Length];
             switch (groupSize)
             {
                 case 1:
-                    for (var i = 0; i < data.Length; i++)
+                    for (int i = 0; i < data.Length; i++)
                     {
-                        var bits = data[i];
+                        byte bits = data[i];
                         // http://stackoverflow.com/a/812039
                         r[i] = (byte) ((bits << amount) | (bits >> (8 - amount)));
                     }
                     break;
                 default:
-                    throw new NotImplementedException($"Unable to rotate a group of {groupSize} bytes yet");
+                    throw new NotImplementedException(string.Format("Unable to rotate a group of {0} bytes yet", groupSize));
             }
             return r;
         }
@@ -525,21 +550,21 @@ namespace Kaitai
             // but can be 6 bytes if FDICT is set.
             // There's also 4 checksum bytes at the end of the stream.
 
-            var zlibCmf = data[0];
+            byte zlibCmf = data[0];
             if ((zlibCmf & 0x0F) != 0x08) throw new NotSupportedException("Only the DEFLATE algorithm is supported for zlib data.");
 
             const int zlibFooter = 4;
-            var zlibHeader = 2;
+            int zlibHeader = 2;
 
             // If the FDICT bit (0x20) is 1, then the 4-byte dictionary is included in the header, we need to skip it
-            var zlibFlg = data[1];
+            byte zlibFlg = data[1];
             if ((zlibFlg & 0x20) == 0x20) zlibHeader += 4;
 
-            using (var ms = new MemoryStream(data, zlibHeader, data.Length - (zlibHeader + zlibFooter)))
+            using (MemoryStream ms = new MemoryStream(data, zlibHeader, data.Length - (zlibHeader + zlibFooter)))
             {
-                using (var ds = new DeflateStream(ms, CompressionMode.Decompress))
+                using (DeflateStream ds = new DeflateStream(ms, CompressionMode.Decompress))
                 {
-                    using (var target = new MemoryStream())
+                    using (MemoryStream target = new MemoryStream())
                     {
                         ds.CopyTo(target);
                         return target.ToArray();
@@ -565,8 +590,8 @@ namespace Kaitai
         /// <returns>The result of the modulo opertion. Will always be positive.</returns>
         public static int Mod(int a, int b)
         {
-            if (b <= 0) throw new ArgumentException("Divisor of mod operation must be greater than zero.", nameof(b));
-            var r = a % b;
+            if (b <= 0) throw new ArgumentException("Divisor of mod operation must be greater than zero.", "b");
+            int r = a % b;
             if (r < 0) r += b;
             return r;
         }
@@ -584,8 +609,8 @@ namespace Kaitai
         /// <returns>The result of the modulo opertion. Will always be positive.</returns>
         public static long Mod(long a, long b)
         {
-            if (b <= 0) throw new ArgumentException("Divisor of mod operation must be greater than zero.", nameof(b));
-            var r = a % b;
+            if (b <= 0) throw new ArgumentException("Divisor of mod operation must be greater than zero.", "b");
+            long r = a % b;
             if (r < 0) r += b;
             return r;
         }
