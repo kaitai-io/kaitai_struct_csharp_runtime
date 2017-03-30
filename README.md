@@ -8,13 +8,12 @@ formats, network stream packet formats, etc.
 
 Further reading:
 
-* [About Kaitai Struct](https://github.com/kaitai-io/kaitai_struct/)
-* [About API implemented in this library](https://github.com/kaitai-io/kaitai_struct/)
-* [C#-specific notes](https://github.com/kaitai-io/kaitai_struct/wiki/C%23)
+* [About Kaitai Struct](http://kaitai.io/)
+* [About API implemented in this library](http://doc.kaitai.io/stream_api.html)
 
 ## Licensing
 
-Copyright 2016 Kaitai Project: MIT license
+Copyright 2016-2017 Kaitai Project: MIT license
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
