@@ -429,6 +429,7 @@ namespace Kaitai
                     if (bytes[i] != expected[i])
                     {
                         error = true;
+                        break;
                     }
                 }
             }
