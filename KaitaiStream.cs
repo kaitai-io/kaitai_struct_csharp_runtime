@@ -616,6 +616,33 @@ namespace Kaitai
             return r;
         }
 
+        /// <summary>
+        /// Compares two byte arrays in lexicographical order.
+        /// </summary>
+        /// <returns>negative number if a is less than b, <c>0</c> if a is equal to b, positive number if a is greater than b.</returns>
+        /// <param name="a">First byte array to compare</param>
+        /// <param name="b">Second byte array to compare.</param>
+        public static int ByteArrayCompare(byte[] a, byte[] b)
+        {
+            if (a == b)
+                return 0;
+            int al = a.Count();
+            int bl = b.Count();
+            int minLen = al < bl ? al : bl;
+            for (int i = 0; i < minLen; i++) {
+                int cmp = a[i] - b[i];
+                if (cmp != 0)
+                    return cmp;
+            }
+
+            // Reached the end of at least one of the arrays
+            if (al == bl) {
+                return 0;
+            } else {
+                return al - bl;
+            }
+        }
+
         #endregion
     }
 }
