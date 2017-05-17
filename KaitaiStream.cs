@@ -343,8 +343,26 @@ namespace Kaitai
         /// <returns></returns>
         public byte[] ReadBytes(long count)
         {
+            if (count < 0 || count > Int32.MaxValue)
+                throw new ArgumentOutOfRangeException("requested " + count + " bytes, while only non-negative int32 amount of bytes possible");
             byte[] bytes = base.ReadBytes((int) count);
             if (bytes.Length < count)
+                throw new EndOfStreamException("requested " + count + " bytes, but got only " + bytes.Length + " bytes");
+            return bytes;
+        }
+
+        /// <summary>
+        /// Read a fixed number of bytes from the stream
+        /// </summary>
+        /// <param name="count">The number of bytes to read</param>
+        /// <returns></returns>
+        public byte[] ReadBytes(ulong count)
+        {
+            if (count > Int32.MaxValue)
+                throw new ArgumentOutOfRangeException("requested " + count + " bytes, while only non-negative int32 amount of bytes possible");
+            int cnt = (int)count;
+            byte[] bytes = base.ReadBytes(cnt);
+            if (bytes.Length < cnt)
                 throw new EndOfStreamException("requested " + count + " bytes, but got only " + bytes.Length + " bytes");
             return bytes;
         }
