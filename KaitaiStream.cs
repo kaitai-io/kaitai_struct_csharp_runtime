@@ -465,7 +465,7 @@ namespace Kaitai
         public static byte[] BytesStripRight(byte[] src, byte padByte)
         {
             int newLen = src.Length;
-            while (src[newLen - 1] == padByte)
+            while (newLen > 0 && src[newLen - 1] == padByte)
                 newLen--;
 
             byte[] dst = new byte[newLen];
