@@ -1,12 +1,12 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Configuration Condition=" '$(Configuration)' == '' ">Release</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{8339A750-C407-4CE8-8E31-51CB2EFD3A4B}</ProjectGuid>
     <OutputType>Library</OutputType>
-    <RootNamespace>kaitai_struct_runtime_csharp</RootNamespace>
-    <AssemblyName>kaitai_struct_runtime_csharp</AssemblyName>
+    <RootNamespace>KaitaiStruct</RootNamespace>
+    <AssemblyName>KaitaiStruct.Runtime.CSharp</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
@@ -34,6 +34,9 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="KaitaiStream.cs" />
     <Compile Include="KaitaiStruct.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="kaitai_struct_runtime_csharp.nuspec" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
 </Project>
