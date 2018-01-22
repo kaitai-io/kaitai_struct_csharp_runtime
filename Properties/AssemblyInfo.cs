@@ -5,7 +5,7 @@ using System.Runtime.CompilerServices;
 // Change them to the values specific to your project.
 
 // NOTE: These attributes are used in the kaitai_struct_runtime_csharp.nuspec NuGet package config file.
-[assembly: AssemblyTitle("KaitaiStruct.Runtime.CSharp")]
+[assembly: AssemblyTitle("Kaitai.Struct.Runtime")]
 [assembly: AssemblyDescription("This library implements Kaitai Struct API for C#.")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("Kaitai Project")]

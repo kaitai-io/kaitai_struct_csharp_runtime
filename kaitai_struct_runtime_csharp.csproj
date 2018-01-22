@@ -5,8 +5,8 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{8339A750-C407-4CE8-8E31-51CB2EFD3A4B}</ProjectGuid>
     <OutputType>Library</OutputType>
-    <RootNamespace>KaitaiStruct</RootNamespace>
-    <AssemblyName>KaitaiStruct.Runtime.CSharp</AssemblyName>
+    <RootNamespace>Kaitai</RootNamespace>
+    <AssemblyName>Kaitai.Struct.Runtime</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
@@ -26,6 +26,7 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <ConsolePause>false</ConsolePause>
+    <DocumentationFile>bin\Release\Kaitai.Struct.Runtime.xml</DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />

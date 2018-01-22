@@ -11,7 +11,10 @@
     <iconUrl>https://avatars2.githubusercontent.com/u/17322584?s=280&amp;v=4</iconUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>$description$</description>
-    <releaseNotes>Initial NuGet release.</releaseNotes>
+    <releaseNotes>
+      Changed default namespace to Katai.
+      Changed assembly name to Kaitai.Struct.Runtime.
+    </releaseNotes>
     <copyright>$copyright$</copyright>
     <tags>Kaitai Struct File-Format Binary Protocols</tags>
   </metadata>
