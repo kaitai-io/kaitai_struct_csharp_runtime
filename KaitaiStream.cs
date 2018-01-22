@@ -428,26 +428,19 @@ namespace Kaitai
         public byte[] EnsureFixedContents(byte[] expected)
         {
             byte[] bytes = ReadBytes(expected.Length);
-            bool error = false;
-            if (bytes.Length == expected.Length)
+
+            if (bytes.Length != expected.Length)
             {
-                for (int i = 0; i < bytes.Length; i++)
+                throw new Exception(string.Format("Expected bytes: {0} ({1} bytes), Instead got: {2} ({3} bytes)", Convert.ToBase64String(expected), expected.Length, Convert.ToBase64String(bytes), bytes.Length));
+            }
+            for (int i = 0; i < bytes.Length; i++)
+            {
+                if (bytes[i] != expected[i])
                 {
-                    if (bytes[i] != expected[i])
-                    {
-                        error = true;
-                        break;
-                    }
+                    throw new Exception(string.Format("Expected bytes: {0} ({1} bytes), Instead got: {2} ({3} bytes)", Convert.ToBase64String(expected), expected.Length, Convert.ToBase64String(bytes), bytes.Length));
                 }
             }
-            else
-            {
-                error = true;
-            }
-            if (error)
-            {
-                throw new Exception(string.Format("Expected bytes: {0}, Instead got: {1}", Convert.ToBase64String(expected), Convert.ToBase64String(bytes)));
-            }
+            
             return bytes;
         }
 
