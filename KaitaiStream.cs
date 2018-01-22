@@ -16,7 +16,6 @@ namespace Kaitai
 
         public KaitaiStream(Stream stream) : base(stream)
         {
-
         }
 
         ///<summary>
@@ -24,7 +23,6 @@ namespace Kaitai
         ///</summary>
         public KaitaiStream(string file) : base(File.Open(file, FileMode.Open, FileAccess.Read, FileShare.Read))
         {
-
         }
 
         ///<summary>
@@ -32,7 +30,6 @@ namespace Kaitai
         ///</summary>
         public KaitaiStream(byte[] bytes) : base(new MemoryStream(bytes))
         {
-
         }
 
         private ulong Bits = 0;
@@ -68,7 +65,7 @@ namespace Kaitai
         }
 
         /// <summary>
-        /// Get the total length of the stream
+        /// Get the total length of the stream (ie. file size)
         /// </summary>
         public long Size
         {
@@ -322,14 +319,7 @@ namespace Kaitai
 
         private static ulong GetMaskOnes(int n)
         {
-            if (n == 64)
-            {
-                return 0xffffffffffffffffUL;
-            }
-            else
-            {
-                return (1UL << n) - 1;
-            }
+            return n == 64 ? 0xffffffffffffffffUL : (1UL << n) - 1;
         }
 
         #endregion
@@ -360,9 +350,8 @@ namespace Kaitai
         {
             if (count > Int32.MaxValue)
                 throw new ArgumentOutOfRangeException("requested " + count + " bytes, while only non-negative int32 amount of bytes possible");
-            int cnt = (int)count;
-            byte[] bytes = base.ReadBytes(cnt);
-            if (bytes.Length < cnt)
+            byte[] bytes = base.ReadBytes((int)count);
+            if (bytes.Length < (int)count)
                 throw new EndOfStreamException("requested " + count + " bytes, but got only " + bytes.Length + " bytes");
             return bytes;
         }
@@ -410,7 +399,7 @@ namespace Kaitai
         /// <returns></returns>
         public byte[] ReadBytesTerm(byte terminator, bool includeTerminator, bool consumeTerminator, bool eosError)
         {
-            List<byte> bytes = new System.Collections.Generic.List<byte>();
+            List<byte> bytes = new List<byte>();
             while (true)
             {
                 if (IsEof)
