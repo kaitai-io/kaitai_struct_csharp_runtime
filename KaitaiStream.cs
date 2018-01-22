@@ -633,8 +633,8 @@ namespace Kaitai
         {
             if (a == b)
                 return 0;
-            int al = a.Count();
-            int bl = b.Count();
+            int al = a.Length;
+            int bl = b.Length;
             int minLen = al < bl ? al : bl;
             for (int i = 0; i < minLen; i++) {
                 int cmp = a[i] - b[i];
