@@ -35,6 +35,8 @@ namespace Kaitai
         private ulong Bits = 0;
         private int BitsLeft = 0;
 
+        static readonly bool IsLittleEndian = BitConverter.IsLittleEndian;
+
         #endregion
 
         #region Stream positioning
@@ -364,7 +366,7 @@ namespace Kaitai
         protected byte[] ReadBytesNormalisedLittleEndian(int count)
         {
             byte[] bytes = ReadBytes(count);
-            if (!BitConverter.IsLittleEndian) Array.Reverse(bytes);
+            if (!IsLittleEndian) Array.Reverse(bytes);
             return bytes;
         }
 
@@ -376,7 +378,7 @@ namespace Kaitai
         protected byte[] ReadBytesNormalisedBigEndian(int count)
         {
             byte[] bytes = ReadBytes(count);
-            if (BitConverter.IsLittleEndian) Array.Reverse(bytes);
+            if (IsLittleEndian) Array.Reverse(bytes);
             return bytes;
         }
 
