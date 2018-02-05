@@ -16,7 +16,6 @@ namespace Kaitai
 
         public KaitaiStream(Stream stream) : base(stream)
         {
-
         }
 
         ///<summary>
@@ -24,7 +23,6 @@ namespace Kaitai
         ///</summary>
         public KaitaiStream(string file) : base(File.Open(file, FileMode.Open, FileAccess.Read, FileShare.Read))
         {
-
         }
 
         ///<summary>
@@ -32,11 +30,12 @@ namespace Kaitai
         ///</summary>
         public KaitaiStream(byte[] bytes) : base(new MemoryStream(bytes))
         {
-
         }
 
         private ulong Bits = 0;
         private int BitsLeft = 0;
+
+        static readonly bool IsLittleEndian = BitConverter.IsLittleEndian;
 
         #endregion
 
@@ -68,7 +67,7 @@ namespace Kaitai
         }
 
         /// <summary>
-        /// Get the total length of the stream
+        /// Get the total length of the stream (ie. file size)
         /// </summary>
         public long Size
         {
@@ -322,14 +321,7 @@ namespace Kaitai
 
         private static ulong GetMaskOnes(int n)
         {
-            if (n == 64)
-            {
-                return 0xffffffffffffffffUL;
-            }
-            else
-            {
-                return (1UL << n) - 1;
-            }
+            return n == 64 ? 0xffffffffffffffffUL : (1UL << n) - 1;
         }
 
         #endregion
@@ -360,9 +352,8 @@ namespace Kaitai
         {
             if (count > Int32.MaxValue)
                 throw new ArgumentOutOfRangeException("requested " + count + " bytes, while only non-negative int32 amount of bytes possible");
-            int cnt = (int)count;
-            byte[] bytes = base.ReadBytes(cnt);
-            if (bytes.Length < cnt)
+            byte[] bytes = base.ReadBytes((int)count);
+            if (bytes.Length < (int)count)
                 throw new EndOfStreamException("requested " + count + " bytes, but got only " + bytes.Length + " bytes");
             return bytes;
         }
@@ -375,7 +366,7 @@ namespace Kaitai
         protected byte[] ReadBytesNormalisedLittleEndian(int count)
         {
             byte[] bytes = ReadBytes(count);
-            if (!BitConverter.IsLittleEndian) Array.Reverse(bytes);
+            if (!IsLittleEndian) Array.Reverse(bytes);
             return bytes;
         }
 
@@ -387,7 +378,7 @@ namespace Kaitai
         protected byte[] ReadBytesNormalisedBigEndian(int count)
         {
             byte[] bytes = ReadBytes(count);
-            if (BitConverter.IsLittleEndian) Array.Reverse(bytes);
+            if (IsLittleEndian) Array.Reverse(bytes);
             return bytes;
         }
 
@@ -410,7 +401,7 @@ namespace Kaitai
         /// <returns></returns>
         public byte[] ReadBytesTerm(byte terminator, bool includeTerminator, bool consumeTerminator, bool eosError)
         {
-            List<byte> bytes = new System.Collections.Generic.List<byte>();
+            List<byte> bytes = new List<byte>();
             while (true)
             {
                 if (IsEof)
@@ -439,26 +430,19 @@ namespace Kaitai
         public byte[] EnsureFixedContents(byte[] expected)
         {
             byte[] bytes = ReadBytes(expected.Length);
-            bool error = false;
-            if (bytes.Length == expected.Length)
+
+            if (bytes.Length != expected.Length)
             {
-                for (int i = 0; i < bytes.Length; i++)
+                throw new Exception(string.Format("Expected bytes: {0} ({1} bytes), Instead got: {2} ({3} bytes)", Convert.ToBase64String(expected), expected.Length, Convert.ToBase64String(bytes), bytes.Length));
+            }
+            for (int i = 0; i < bytes.Length; i++)
+            {
+                if (bytes[i] != expected[i])
                 {
-                    if (bytes[i] != expected[i])
-                    {
-                        error = true;
-                        break;
-                    }
+                    throw new Exception(string.Format("Expected bytes: {0} ({1} bytes), Instead got: {2} ({3} bytes)", Convert.ToBase64String(expected), expected.Length, Convert.ToBase64String(bytes), bytes.Length));
                 }
             }
-            else
-            {
-                error = true;
-            }
-            if (error)
-            {
-                throw new Exception(string.Format("Expected bytes: {0}, Instead got: {1}", Convert.ToBase64String(expected), Convert.ToBase64String(bytes)));
-            }
+            
             return bytes;
         }
 
@@ -644,8 +628,8 @@ namespace Kaitai
         {
             if (a == b)
                 return 0;
-            int al = a.Count();
-            int bl = b.Count();
+            int al = a.Length;
+            int bl = b.Length;
             int minLen = al < bl ? al : bl;
             for (int i = 0; i < minLen; i++) {
                 int cmp = a[i] - b[i];
