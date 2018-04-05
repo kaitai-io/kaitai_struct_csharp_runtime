@@ -7,34 +7,50 @@ using System.Linq;
 namespace Kaitai
 {
     /// <summary>
-    /// The base Kaitai steam which exposes an API for the Kaitai Struct framework.
-    /// It's based off a <code>BinaryReader</code>, which is a little-endian reader.
+    /// The base Kaitai stream which exposes an API for the Kaitai Struct framework.
+    /// It's based off a <c>BinaryReader</c>, which is a little-endian reader.
     /// </summary>
     public partial class KaitaiStream : BinaryReader
     {
         #region Constructors
 
+        /// <summary>
+        /// Create a KaitaiStream backed by abstract stream. It could be in-memory buffer or open file.
+        /// </summary>
         public KaitaiStream(Stream stream) : base(stream)
         {
         }
 
-        ///<summary>
-        /// Creates a KaitaiStream backed by a file (RO)
-        ///</summary>
-        public KaitaiStream(string file) : base(File.Open(file, FileMode.Open, FileAccess.Read, FileShare.Read))
+        /// <summary>
+        /// Create a KaitaiStream by opening a file in read-only binary mode (FileStream).
+        /// </summary>
+        public KaitaiStream(string filename) : base(File.Open(filename, FileMode.Open, FileAccess.Read, FileShare.Read))
         {
         }
 
-        ///<summary>
-        ///Creates a KaitaiStream backed by a byte buffer
-        ///</summary>
-        public KaitaiStream(byte[] bytes) : base(new MemoryStream(bytes))
+        /// <summary>
+        /// Create a KaitaiStream backed by in-memory buffer.
+        /// </summary>
+        public KaitaiStream(byte[] data) : base(new MemoryStream(data))
         {
         }
 
+        /// <summary>
+        /// Temporary 64-bit buffer for leftover bits left from an unaligned bit 
+        /// read operation. Following unaligned bit operations would consume bits 
+        /// left in this buffer first, and then, if needed, would continue 
+        /// consuming bytes from the stream.
+        /// </summary>
         private ulong Bits = 0;
+        /// <summary>
+        /// Number of bits left in <c>Bits</c> buffer.
+        /// </summary>
         private int BitsLeft = 0;
 
+        /// <summary>
+        /// Caches the current platform endianness and allows emitted bytecode to be optimized. Thanks to @Arlorean.
+        /// https://github.com/kaitai-io/kaitai_struct_csharp_runtime/pull/9
+        /// </summary>
         static readonly bool IsLittleEndian = BitConverter.IsLittleEndian;
 
         #endregion
@@ -42,7 +58,8 @@ namespace Kaitai
         #region Stream positioning
 
         /// <summary>
-        /// Check if the stream position is at the end of the stream
+        /// Check if the stream position is at the end of the stream (at EOF).
+        /// WARNING: This requires a stream that supports seeking (memory-based or file-based).
         /// </summary>
         public bool IsEof
         {
@@ -50,16 +67,18 @@ namespace Kaitai
         }
 
         /// <summary>
-        /// Seek to a specific position from the beginning of the stream
+        /// Move the stream to a specified absolute position.
+        /// WARNING: This requires a stream that supports seeking (memory-based or file-based).
         /// </summary>
-        /// <param name="position">The position to seek to</param>
+        /// <param name="position">The position to seek to, as non-negative integer</param>
         public void Seek(long position)
         {
             BaseStream.Seek(position, SeekOrigin.Begin);
         }
 
         /// <summary>
-        /// Get the current position in the stream
+        /// Get the current position within the stream.
+        /// WARNING: This requires a stream that supports seeking (memory-based or file-based).
         /// </summary>
         public long Pos
         {
@@ -67,7 +86,8 @@ namespace Kaitai
         }
 
         /// <summary>
-        /// Get the total length of the stream (ie. file size)
+        /// Get the total length of the stream (ie. file size).
+        /// WARNING: This requires a stream that supports seeking (memory-based or file-based).
         /// </summary>
         public long Size
         {
@@ -81,9 +101,8 @@ namespace Kaitai
         #region Signed
 
         /// <summary>
-        /// Read a signed byte from the stream
+        /// Read a signed byte (1 byte) from the stream.
         /// </summary>
-        /// <returns></returns>
         public sbyte ReadS1()
         {
             return ReadSByte();
@@ -92,27 +111,24 @@ namespace Kaitai
         #region Big-endian
 
         /// <summary>
-        /// Read a signed short from the stream (big endian)
+        /// Read a signed short (2 bytes) from the stream (big endian).
         /// </summary>
-        /// <returns></returns>
         public short ReadS2be()
         {
             return BitConverter.ToInt16(ReadBytesNormalisedBigEndian(2), 0);
         }
 
         /// <summary>
-        /// Read a signed int from the stream (big endian)
+        /// Read a signed int (4 bytes) from the stream (big endian).
         /// </summary>
-        /// <returns></returns>
         public int ReadS4be()
         {
             return BitConverter.ToInt32(ReadBytesNormalisedBigEndian(4), 0);
         }
 
         /// <summary>
-        /// Read a signed long from the stream (big endian)
+        /// Read a signed long (8 bytes) from the stream (big endian).
         /// </summary>
-        /// <returns></returns>
         public long ReadS8be()
         {
             return BitConverter.ToInt64(ReadBytesNormalisedBigEndian(8), 0);
@@ -123,27 +139,24 @@ namespace Kaitai
         #region Little-endian
 
         /// <summary>
-        /// Read a signed short from the stream (little endian)
+        /// Read a signed short (2 bytes) from the stream (little endian).
         /// </summary>
-        /// <returns></returns>
         public short ReadS2le()
         {
             return BitConverter.ToInt16(ReadBytesNormalisedLittleEndian(2), 0);
         }
 
         /// <summary>
-        /// Read a signed int from the stream (little endian)
+        /// Read a signed int (4 bytes) from the stream (little endian).
         /// </summary>
-        /// <returns></returns>
         public int ReadS4le()
         {
             return BitConverter.ToInt32(ReadBytesNormalisedLittleEndian(4), 0);
         }
 
         /// <summary>
-        /// Read a signed long from the stream (little endian)
+        /// Read a signed long (8 bytes) from the stream (little endian).
         /// </summary>
-        /// <returns></returns>
         public long ReadS8le()
         {
             return BitConverter.ToInt64(ReadBytesNormalisedLittleEndian(8), 0);
@@ -156,9 +169,8 @@ namespace Kaitai
         #region Unsigned
 
         /// <summary>
-        /// Read an unsigned byte from the stream
+        /// Read an unsigned byte (1 bytes) from the stream.
         /// </summary>
-        /// <returns></returns>
         public byte ReadU1()
         {
             return ReadByte();
@@ -167,27 +179,24 @@ namespace Kaitai
         #region Big-endian
 
         /// <summary>
-        /// Read an unsigned short from the stream (big endian)
+        /// Read an unsigned short (2 bytes) from the stream (big endian).
         /// </summary>
-        /// <returns></returns>
         public ushort ReadU2be()
         {
             return BitConverter.ToUInt16(ReadBytesNormalisedBigEndian(2), 0);
         }
 
         /// <summary>
-        /// Read an unsigned int from the stream (big endian)
+        /// Read an unsigned int (4 bytes) from the stream (big endian).
         /// </summary>
-        /// <returns></returns>
         public uint ReadU4be()
         {
             return BitConverter.ToUInt32(ReadBytesNormalisedBigEndian(4), 0);
         }
 
         /// <summary>
-        /// Read an unsigned long from the stream (big endian)
+        /// Read an unsigned long (8 bytes) from the stream (big endian).
         /// </summary>
-        /// <returns></returns>
         public ulong ReadU8be()
         {
             return BitConverter.ToUInt64(ReadBytesNormalisedBigEndian(8), 0);
@@ -198,27 +207,24 @@ namespace Kaitai
         #region Little-endian
 
         /// <summary>
-        /// Read an unsigned short from the stream (little endian)
+        /// Read an unsigned short (2 bytes) from the stream (little endian).
         /// </summary>
-        /// <returns></returns>
         public ushort ReadU2le()
         {
             return BitConverter.ToUInt16(ReadBytesNormalisedLittleEndian(2), 0);
         }
 
         /// <summary>
-        /// Read an unsigned int from the stream (little endian)
+        /// Read an unsigned int (4 bytes) from the stream (little endian).
         /// </summary>
-        /// <returns></returns>
         public uint ReadU4le()
         {
             return BitConverter.ToUInt32(ReadBytesNormalisedLittleEndian(4), 0);
         }
 
         /// <summary>
-        /// Read an unsigned long from the stream (little endian)
+        /// Read an unsigned long (8 bytes) from the stream (little endian).
         /// </summary>
-        /// <returns></returns>
         public ulong ReadU8le()
         {
             return BitConverter.ToUInt64(ReadBytesNormalisedLittleEndian(8), 0);
@@ -235,18 +241,16 @@ namespace Kaitai
         #region Big-endian
 
         /// <summary>
-        /// Read a single-precision floating point value from the stream (big endian)
+        /// Read a single-precision floating point value (4 bytes) from the stream (big endian).
         /// </summary>
-        /// <returns></returns>
         public float ReadF4be()
         {
             return BitConverter.ToSingle(ReadBytesNormalisedBigEndian(4), 0);
         }
 
         /// <summary>
-        /// Read a double-precision floating point value from the stream (big endian)
+        /// Read a double-precision floating point value (8 bytes) from the stream (big endian).
         /// </summary>
-        /// <returns></returns>
         public double ReadF8be()
         {
             return BitConverter.ToDouble(ReadBytesNormalisedBigEndian(8), 0);
@@ -257,18 +261,16 @@ namespace Kaitai
         #region Little-endian
 
         /// <summary>
-        /// Read a single-precision floating point value from the stream (little endian)
+        /// Read a single-precision floating point value (4 bytes) from the stream (little endian).
         /// </summary>
-        /// <returns></returns>
         public float ReadF4le()
         {
             return BitConverter.ToSingle(ReadBytesNormalisedLittleEndian(4), 0);
         }
 
         /// <summary>
-        /// Read a double-precision floating point value from the stream (little endian)
+        /// Read a double-precision floating point value (8 bytes) from the stream (little endian).
         /// </summary>
-        /// <returns></returns>
         public double ReadF8le()
         {
             return BitConverter.ToDouble(ReadBytesNormalisedLittleEndian(8), 0);
@@ -280,12 +282,29 @@ namespace Kaitai
 
         #region Unaligned bit values
 
+        /// <summary>
+        /// Clears the temporary buffer which holds not-yet-consumed parts of 
+        /// the byte, which might have left over after last unaligned bit read 
+        /// operation. Effectively, aligns the pointer in the stream to next 
+        /// whole byte, discarding the rest of partially byte, if it existed. 
+        /// Does nothing if unaligned bit reading is not used.
+        /// </summary>
         public void AlignToByte()
         {
             Bits = 0;
             BitsLeft = 0;
         }
 
+        /// <summary>
+        /// Read next n bits from the stream. By convention, starts from most 
+        /// significant bits first and goes to least significant bits.
+        /// </summary>
+        /// <remarks>
+        /// If n is not a multiple of 8, then bits left over from partially 
+        /// consumed byte would be stored in stream internal buffer. Subsequent 
+        /// calls to this method would consume bits from that buffer first, and 
+        /// then proceed with fetching the new bytes from the stream.
+        /// </remarks>
         public ulong ReadBitsInt(int n)
         {
             int bitsNeeded = n - BitsLeft;
@@ -329,25 +348,23 @@ namespace Kaitai
         #region Byte arrays
 
         /// <summary>
-        /// Read a fixed number of bytes from the stream
+        /// Read a fixed number of bytes from the stream.
         /// </summary>
-        /// <param name="count">The number of bytes to read</param>
-        /// <returns></returns>
+        /// <param name="count">Amount of bytes to read, as non-negative integer</param>
         public byte[] ReadBytes(long count)
         {
             if (count < 0 || count > Int32.MaxValue)
                 throw new ArgumentOutOfRangeException("requested " + count + " bytes, while only non-negative int32 amount of bytes possible");
             byte[] bytes = base.ReadBytes((int) count);
             if (bytes.Length < count)
-                throw new EndOfStreamException("requested " + count + " bytes, but got only " + bytes.Length + " bytes");
+                throw new EndOfStreamException("requested " + count + " bytes, but stream  returned only " + bytes.Length + " bytes");
             return bytes;
         }
 
         /// <summary>
-        /// Read a fixed number of bytes from the stream
+        /// Read a fixed number of bytes from the stream.
         /// </summary>
-        /// <param name="count">The number of bytes to read</param>
-        /// <returns></returns>
+        /// <param name="count">Amount of bytes to read, as non-negative integer</param>
         public byte[] ReadBytes(ulong count)
         {
             if (count > Int32.MaxValue)
@@ -359,10 +376,9 @@ namespace Kaitai
         }
 
         /// <summary>
-        /// Read bytes from the stream in little endian format and convert them to the endianness of the current platform
+        /// Read bytes from the stream in little endian format and convert them to the endianness of the current platform.
         /// </summary>
-        /// <param name="count">The number of bytes to read</param>
-        /// <returns>An array of bytes that matches the endianness of the current platform</returns>
+        /// <param name="count">Amount of bytes to read, as non-negative integer</param>
         protected byte[] ReadBytesNormalisedLittleEndian(int count)
         {
             byte[] bytes = ReadBytes(count);
@@ -371,10 +387,9 @@ namespace Kaitai
         }
 
         /// <summary>
-        /// Read bytes from the stream in big endian format and convert them to the endianness of the current platform
+        /// Read bytes from the stream in big endian format and convert them to the endianness of the current platform.
         /// </summary>
-        /// <param name="count">The number of bytes to read</param>
-        /// <returns>An array of bytes that matches the endianness of the current platform</returns>
+        /// <param name="count">Amount of bytes to read, as non-negative integer</param>
         protected byte[] ReadBytesNormalisedBigEndian(int count)
         {
             byte[] bytes = ReadBytes(count);
@@ -383,22 +398,21 @@ namespace Kaitai
         }
 
         /// <summary>
-        /// Read all the remaining bytes from the stream until the end is reached
+        /// Read all the remaining bytes from the stream until EOF is reached.
+        /// WARNING: This requires a stream that supports seeking (memory-based or file-based).
         /// </summary>
-        /// <returns></returns>
         public byte[] ReadBytesFull()
         {
             return ReadBytes(BaseStream.Length - BaseStream.Position);
         }
 
         /// <summary>
-        /// Read a terminated string from the stream
+        /// Read bytes from the stream, until either terminating byte or EOF is encountered.
         /// </summary>
-        /// <param name="terminator">The string terminator value</param>
-        /// <param name="includeTerminator">True to include the terminator in the returned string</param>
-        /// <param name="consumeTerminator">True to consume the terminator byte before returning</param>
-        /// <param name="eosError">True to throw an error when the EOS was reached before the terminator</param>
-        /// <returns></returns>
+        /// <param name="terminator">The terminating byte, as integer</param>
+        /// <param name="includeTerminator">True to include the terminator in the returned bytes</param>
+        /// <param name="consumeTerminator">True to consume the terminator before returning bytes</param>
+        /// <param name="eosError">True to throw an error when the EOF was reached before the terminator</param>
         public byte[] ReadBytesTerm(byte terminator, bool includeTerminator, bool consumeTerminator, bool eosError)
         {
             List<byte> bytes = new List<byte>();
@@ -406,7 +420,7 @@ namespace Kaitai
             {
                 if (IsEof)
                 {
-                    if (eosError) throw new EndOfStreamException(string.Format("End of stream reached, but no terminator `{0}` found", terminator));
+                    if (eosError) throw new EndOfStreamException(string.Format("End of stream reached, but no terminator {0} found", terminator));
                     break;
                 }
 
@@ -423,10 +437,9 @@ namespace Kaitai
         }
 
         /// <summary>
-        /// Read a specific set of bytes and assert that they are the same as an expected result
+        /// Read a matching amount of bytes and assert that it matches the expected data. Returns same data, or throws an exception.
         /// </summary>
-        /// <param name="expected">The expected result</param>
-        /// <returns></returns>
+        /// <param name="expected">The expected data, as byte array</param>
         public byte[] EnsureFixedContents(byte[] expected)
         {
             byte[] bytes = ReadBytes(expected.Length);
@@ -446,6 +459,11 @@ namespace Kaitai
             return bytes;
         }
 
+        /// <summary>
+        /// Perform right-to-left strip on a byte array.
+        /// </summary>
+        /// <param name="src">The data, as byte array</param>
+        /// <param name="padByte">The padding byte, as integer</param>
         public static byte[] BytesStripRight(byte[] src, byte padByte)
         {
             int newLen = src.Length;
@@ -457,6 +475,12 @@ namespace Kaitai
             return dst;
         }
 
+        /// <summary>
+        /// Perform left-to-right search of specified terminating byte, and cutoff remaining bytes.
+        /// </summary>
+        /// <param name="src">The data, as byte array</param>
+        /// <param name="terminator">The terminating byte, as integer</param>
+        /// <param name="includeTerminator">True to include the terminating byte in result</param>
         public static byte[] BytesTerminate(byte[] src, byte terminator, bool includeTerminator)
         {
             int newLen = 0;
@@ -478,11 +502,10 @@ namespace Kaitai
         #region Byte array processing
 
         /// <summary>
-        /// Performs XOR processing with given data, XORing every byte of the input with a single value.
+        /// Perform XOR processing between given data and single-byte key.
         /// </summary>
-        /// <param name="value">The data toe process</param>
-        /// <param name="key">The key value to XOR with</param>
-        /// <returns>Processed data</returns>
+        /// <param name="value">The data to process, as byte array</param>
+        /// <param name="key">The key to XOR with, as integer</param>
         public byte[] ProcessXor(byte[] value, int key)
         {
             byte[] result = new byte[value.Length];
@@ -494,12 +517,10 @@ namespace Kaitai
         }
 
         /// <summary>
-        /// Performs XOR processing with given data, XORing every byte of the input with a key
-        /// array, repeating from the beginning of the key array if necessary
+        /// Perform XOR processing between given data and multiple-byte key.
         /// </summary>
-        /// <param name="value">The data toe process</param>
-        /// <param name="key">The key array to XOR with</param>
-        /// <returns>Processed data</returns>
+        /// <param name="value">The data to process, as byte array</param>
+        /// <param name="key">The key to XOR with, as byte array</param>
         public byte[] ProcessXor(byte[] value, byte[] key)
         {
             int keyLen = key.Length;
@@ -512,13 +533,12 @@ namespace Kaitai
         }
 
         /// <summary>
-        /// Performs a circular left rotation shift for a given buffer by a given amount of bits.
+        /// Perform circular left rotation shift for a given data by a given amount of bits.
         /// Pass a negative amount to rotate right.
         /// </summary>
-        /// <param name="data">The data to rotate</param>
-        /// <param name="amount">The number of bytes to rotate by</param>
-        /// <param name="groupSize"></param>
-        /// <returns></returns>
+        /// <param name="data">The data to rotate, as byte array</param>
+        /// <param name="amount">The amount to rotate by (in bits), as integer</param>
+        /// <param name="groupSize">The size of group in which rotation happens, as non-negative integer</param>
         public byte[] ProcessRotateLeft(byte[] data, int amount, int groupSize)
         {
             if (amount > 7 || amount < -7) throw new ArgumentException("Rotation of more than 7 cannot be performed.", "amount");
@@ -542,10 +562,9 @@ namespace Kaitai
         }
 
         /// <summary>
-        /// Inflates a deflated zlib byte stream
+        /// Inflate a previously deflated zlib byte stream.
         /// </summary>
-        /// <param name="data">The data to deflate</param>
-        /// <returns>The deflated result</returns>
+        /// <param name="data">The data to deflate, as byte array</param>
         public byte[] ProcessZlib(byte[] data)
         {
             // See RFC 1950 (https://tools.ietf.org/html/rfc1950)
@@ -581,16 +600,15 @@ namespace Kaitai
         #region Misc utility methods
 
         /// <summary>
-        /// Performs modulo operation between two integers.
+        /// Perform modulo operation between two integers. 
+        /// NOTE: Result is always non-negative and within `0..b-1`.
         /// </summary>
         /// <remarks>
-        /// This method is required because C# lacks a "true" modulo
-        /// operator, the % operator rather being the "remainder"
-        /// operator. We want mod operations to always be positive.
+        /// This method is required because C# lacks a "true" modulo operator, 
+        /// the % operator rather being the "division remainder" operator. 
         /// </remarks>
-        /// <param name="a">The value to be divided</param>
-        /// <param name="b">The value to divide by. Must be greater than zero.</param>
-        /// <returns>The result of the modulo opertion. Will always be positive.</returns>
+        /// <param name="a">The value to be divided, as integer</param>
+        /// <param name="b">The value to divide by, as positive integer</param>
         public static int Mod(int a, int b)
         {
             if (b <= 0) throw new ArgumentException("Divisor of mod operation must be greater than zero.", "b");
@@ -600,16 +618,15 @@ namespace Kaitai
         }
 
         /// <summary>
-        /// Performs modulo operation between two integers.
+        /// Perform modulo operation between two integers. 
+        /// NOTE: Result is always non-negative and within `0..b-1`.
         /// </summary>
         /// <remarks>
-        /// This method is required because C# lacks a "true" modulo
-        /// operator, the % operator rather being the "remainder"
-        /// operator. We want mod operations to always be positive.
+        /// This method is required because C# lacks a "true" modulo operator, 
+        /// the % operator rather being the "division remainder" operator. 
         /// </remarks>
-        /// <param name="a">The value to be divided</param>
-        /// <param name="b">The value to divide by. Must be greater than zero.</param>
-        /// <returns>The result of the modulo opertion. Will always be positive.</returns>
+        /// <param name="a">The value to be divided, as integer</param>
+        /// <param name="b">The value to divide by, as positive integer</param>
         public static long Mod(long a, long b)
         {
             if (b <= 0) throw new ArgumentException("Divisor of mod operation must be greater than zero.", "b");
@@ -619,11 +636,11 @@ namespace Kaitai
         }
 
         /// <summary>
-        /// Compares two byte arrays in lexicographical order.
+        /// Compare two byte arrays in lexicographical order. The arrays may not be equal length.
         /// </summary>
-        /// <returns>negative number if a is less than b, <c>0</c> if a is equal to b, positive number if a is greater than b.</returns>
+        /// <returns>Negative number if a is less than b, <c>0</c> if a is equal to b, positive number if a is greater than b.</returns>
         /// <param name="a">First byte array to compare</param>
-        /// <param name="b">Second byte array to compare.</param>
+        /// <param name="b">Second byte array to compare</param>
         public static int ByteArrayCompare(byte[] a, byte[] b)
         {
             if (a == b)
