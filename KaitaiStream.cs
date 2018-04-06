@@ -427,8 +427,10 @@ namespace Kaitai
                 byte b = ReadByte();
                 if (b == terminator)
                 {
-                    if (includeTerminator) bytes.Add(b);
-                    if (!consumeTerminator) Seek(Pos - 1);
+                    if (includeTerminator)
+                        bytes.Add(b);
+                    if (!consumeTerminator)
+                        BaseStream.Seek(-1, SeekOrigin.Current);
                     break;
                 }
                 bytes.Add(b);
