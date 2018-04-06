@@ -456,14 +456,20 @@ namespace Kaitai
 
         /// <summary>
         /// Perform right-to-left strip on a byte array.
+        /// WARNING: Can return original byte array.
         /// </summary>
         /// <param name="src">The data, as byte array</param>
         /// <param name="padByte">The padding byte, as integer</param>
         public static byte[] BytesStripRight(byte[] src, byte padByte)
         {
             int newLen = src.Length;
+            int maxLen = src.Length;
+
             while (newLen > 0 && src[newLen - 1] == padByte)
                 newLen--;
+
+            if (newLen == maxLen)
+                return src;
 
             byte[] dst = new byte[newLen];
             Array.Copy(src, dst, newLen);
@@ -472,6 +478,7 @@ namespace Kaitai
 
         /// <summary>
         /// Perform left-to-right search of specified terminating byte, and cutoff remaining bytes.
+        /// WARNING: Can return original byte array.
         /// </summary>
         /// <param name="src">The data, as byte array</param>
         /// <param name="terminator">The terminating byte, as integer</param>
@@ -486,6 +493,9 @@ namespace Kaitai
 
             if (includeTerminator && newLen < maxLen)
                 newLen++;
+
+            if (newLen == maxLen)
+                return src;
 
             byte[] dst = new byte[newLen];
             Array.Copy(src, dst, newLen);
