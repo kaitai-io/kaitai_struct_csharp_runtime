@@ -53,6 +53,11 @@ namespace Kaitai
         /// </summary>
         static readonly bool IsLittleEndian = BitConverter.IsLittleEndian;
 
+        static KaitaiStream()
+        {
+            computeSingleRotations();
+        }
+
         #endregion
 
         #region Stream positioning
@@ -555,33 +560,98 @@ namespace Kaitai
             return result;
         }
 
+        private static byte[][] precomputedSingleRotations;
+
+        /// <summary>
+        /// Speeds up <c>ProcessRotateLeft</c> by precomputing translations tables. 
+        /// In effect only when groupSize is 1.
+        /// </summary>
+        private static void computeSingleRotations()
+        {
+            precomputedSingleRotations = new byte[8][];
+            for (int amount = 1; amount < 8; amount++)
+            {
+                int anti_amount = 8 - amount;
+                byte[] translate = new byte[256];
+                for (int i = 0; i < 256; i++)
+                {
+                    // formula taken from: http://stackoverflow.com/a/812039
+                    translate[i] = (byte) ((i << amount) | (i >> anti_amount));
+                }
+                precomputedSingleRotations[amount] = translate;
+            }
+        }
+
         /// <summary>
         /// Perform circular left rotation shift for a given data by a given amount of bits.
         /// Pass a negative amount to rotate right.
+        /// WARNING: May return same byte array if amount is zero (modulo-wise).
         /// </summary>
         /// <param name="data">The data to rotate, as byte array</param>
-        /// <param name="amount">The amount to rotate by (in bits), as integer</param>
-        /// <param name="groupSize">The size of group in which rotation happens, as non-negative integer</param>
+        /// <param name="amount">The amount to rotate by (in bits), as integer, negative for right rotation</param>
+        /// <param name="groupSize">The size of group in which rotation happens, as positive integer</param>
         public byte[] ProcessRotateLeft(byte[] data, int amount, int groupSize)
         {
-            if (amount > 7 || amount < -7) throw new ArgumentException("Rotation of more than 7 cannot be performed.", "amount");
-            if (amount < 0) amount += 8; // Rotation of -2 is the same as rotation of +6
+            if (groupSize < 1)
+                throw new ArgumentException("group size must be at least 1 to be valid", "groupSize");
 
-            byte[] r = new byte[data.Length];
-            switch (groupSize)
+            amount = Mod(amount, groupSize * 8);
+            if (amount == 0)
+                return data;
+
+            int amount_bytes = amount / 8;
+            byte[] result = new byte[data.Length];
+
+            if (groupSize == 1)
             {
-                case 1:
-                    for (int i = 0; i < data.Length; i++)
-                    {
-                        byte bits = data[i];
-                        // http://stackoverflow.com/a/812039
-                        r[i] = (byte) ((bits << amount) | (bits >> (8 - amount)));
-                    }
-                    break;
-                default:
-                    throw new NotImplementedException(string.Format("Unable to rotate a group of {0} bytes yet", groupSize));
+                byte[] translate = precomputedSingleRotations[amount];
+
+                for (int i = 0; i < data.Length; i++)
+                {
+                    result[i] = translate[data[i]];
+                }
+                return result;
             }
-            return r;
+
+            if (data.Length % groupSize != 0)
+                throw new Exception("data length must be a multiple of group size");
+
+            if (amount % 8 == 0)
+            {
+                int[] indices = new int[groupSize];
+                for (int i = 0; i < groupSize; i++)
+                {
+                    indices[i] = (i + amount_bytes) % groupSize;
+                }
+                for (int i = 0; i < data.Length; i += groupSize)
+                {
+                    for (int k = 0; k < groupSize; k++)
+                    {
+                        result[i+k] = data[i + indices[k]];
+                    }
+                }
+                return result;
+            }
+
+            {
+                int amount1 = amount % 8;
+                int amount2 = 8 - amount1;
+                int[] indices1 = new int[groupSize];
+                int[] indices2 = new int[groupSize];
+                for (int i = 0; i < groupSize; i++)
+                {
+                    indices1[i] = (i +     amount_bytes) % groupSize;
+                    indices2[i] = (i + 1 + amount_bytes) % groupSize;
+                }
+                for (int i = 0; i < data.Length; i += groupSize)
+                {
+                    for (int k = 0; k < groupSize; k++)
+                    {
+                        result[i+k] = (byte) ((data[i + indices1[k]] << amount1) | (data[i + indices2[k]] >> amount2));
+                    }
+                }
+                return result;
+            }
         }
 
         /// <summary>
