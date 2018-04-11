@@ -508,32 +508,50 @@ namespace Kaitai
 
         /// <summary>
         /// Perform XOR processing between given data and single-byte key.
+        /// WARNING: May return same byte array if key is zero.
         /// </summary>
-        /// <param name="value">The data to process, as byte array</param>
+        /// <param name="data">The data to process, as byte array</param>
         /// <param name="key">The key to XOR with, as integer</param>
-        public byte[] ProcessXor(byte[] value, int key)
+        public byte[] ProcessXor(byte[] data, int key)
         {
-            byte[] result = new byte[value.Length];
-            for (int i = 0; i < value.Length; i++)
+            if (key == 0)
+                return data;
+
+            byte[] result = new byte[data.Length];
+
+            for (int i = 0; i < data.Length; i++)
             {
-                result[i] = (byte)(value[i] ^ key);
+                result[i] = (byte)(data[i] ^ key);
             }
+
             return result;
         }
 
         /// <summary>
         /// Perform XOR processing between given data and multiple-byte key.
+        /// WARNING: May return same byte array if key is zero.
         /// </summary>
-        /// <param name="value">The data to process, as byte array</param>
+        /// <param name="data">The data to process, as byte array</param>
         /// <param name="key">The key to XOR with, as byte array</param>
-        public byte[] ProcessXor(byte[] value, byte[] key)
+        public byte[] ProcessXor(byte[] data, byte[] key)
         {
+            if (key.Length == 1)
+                return ProcessXor(data, key[0]);
+            if (key.Length <= 64 && IsByteArrayZero(key))
+                return data;
+
+            byte[] result = new byte[data.Length];
             int keyLen = key.Length;
-            byte[] result = new byte[value.Length];
-            for (int i = 0, j = 0; i < value.Length; i++, j = (j + 1) % keyLen)
+
+            int k = 0;
+            for (int i = 0; i < data.Length; i++)
             {
-                result[i] = (byte)(value[i] ^ key[j]);
+                result[i] = (byte)(data[i] ^ key[k]);
+                k++;
+                if (k == keyLen)
+                    k = 0;
             }
+
             return result;
         }
 
