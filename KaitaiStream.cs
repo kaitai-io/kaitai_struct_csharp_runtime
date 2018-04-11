@@ -444,16 +444,9 @@ namespace Kaitai
         {
             byte[] bytes = ReadBytes(expected.Length);
 
-            if (bytes.Length != expected.Length)
+            if (ByteArrayEqual(bytes, expected) == false)
             {
-                throw new Exception(string.Format("Expected bytes: {0} ({1} bytes), Instead got: {2} ({3} bytes)", Convert.ToBase64String(expected), expected.Length, Convert.ToBase64String(bytes), bytes.Length));
-            }
-            for (int i = 0; i < bytes.Length; i++)
-            {
-                if (bytes[i] != expected[i])
-                {
-                    throw new Exception(string.Format("Expected bytes: {0} ({1} bytes), Instead got: {2} ({3} bytes)", Convert.ToBase64String(expected), expected.Length, Convert.ToBase64String(bytes), bytes.Length));
-                }
+                throw new Exception(string.Format("Expected: {0} , Actual: {1}", Convert.ToBase64String(expected), Convert.ToBase64String(bytes) ));
             }
             
             return bytes;
@@ -648,18 +641,49 @@ namespace Kaitai
             int al = a.Length;
             int bl = b.Length;
             int minLen = al < bl ? al : bl;
-            for (int i = 0; i < minLen; i++) {
+
+            for (int i = 0; i < minLen; i++) 
+            {
                 int cmp = a[i] - b[i];
                 if (cmp != 0)
                     return cmp;
             }
 
             // Reached the end of at least one of the arrays
-            if (al == bl) {
-                return 0;
-            } else {
-                return al - bl;
-            }
+            return al == bl ? 0 : al - bl;
+        }
+
+        /// <summary>
+        /// Compare two byte arrays for exact equality.
+        /// </summary>
+        /// <remarks>
+        /// .NET has Array.Equals and == operators, but those check object identity.
+        /// </remarks>
+        public static bool ByteArrayEqual(byte[] a, byte[] b)
+        {
+            if (a == b)
+                return true;
+
+            if (a.Length != b.Length)
+                return false;
+
+            for (int i=0; i<a.Length; i++)
+                if (a[i] != b[i])
+                    return false;
+
+            return true;
+        }
+
+        /// <summary>
+        /// Check if byte array is all zeroes.
+        /// </summary>
+        public static bool IsByteArrayZero(byte[] a)
+        {
+            for (int i=0; i<a.Length; i++)
+                if (a[i] != 0)
+                    return false;
+
+            return true;
         }
 
         #endregion
