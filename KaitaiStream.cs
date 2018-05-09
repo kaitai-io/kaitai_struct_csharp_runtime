@@ -475,7 +475,7 @@ namespace Kaitai
                     throw new Exception(string.Format("Expected bytes: {0} ({1} bytes), Instead got: {2} ({3} bytes)", Convert.ToBase64String(expected), expected.Length, Convert.ToBase64String(bytes), bytes.Length));
                 }
             }
-            
+
             return bytes;
         }
 
