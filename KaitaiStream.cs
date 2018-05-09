@@ -319,6 +319,39 @@ namespace Kaitai
             return res;
         }
 
+        //Method ported from algorithm specified @ issue#155
+        public ulong ReadBitsIntLe(int n)
+        {
+            int bitsNeeded = n - BitsLeft;
+
+            if (bitsNeeded > 0)
+            {
+                // 1 bit  => 1 byte
+                // 8 bits => 1 byte
+                // 9 bits => 2 bytes
+                int bytesNeeded = ((bitsNeeded - 1) / 8) + 1;
+                byte[] buf = ReadBytes(bytesNeeded);
+                for (int i = 0; i < buf.Length; i++)
+                {
+                    ulong v = (ulong)(buf[i] << BitsLeft);
+                    Bits |= v;
+                    BitsLeft += 8;
+                }
+            }
+
+            // raw mask with required number of 1s, starting from lowest bit
+            ulong mask = GetMaskOnes(n);
+
+            // derive reading result
+            ulong res = (Bits & mask);
+
+            // remove bottom bits that we've just read by shifting
+            Bits >>= n;
+            BitsLeft -= n;
+
+            return res;
+        }
+
         private static ulong GetMaskOnes(int n)
         {
             return n == 64 ? 0xffffffffffffffffUL : (1UL << n) - 1;
