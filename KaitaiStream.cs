@@ -333,7 +333,7 @@ namespace Kaitai
                 byte[] buf = ReadBytes(bytesNeeded);
                 for (int i = 0; i < buf.Length; i++)
                 {
-                    ulong v = (ulong)(buf[i] << BitsLeft);
+                    ulong v = (ulong)((ulong)buf[i] << BitsLeft);
                     Bits |= v;
                     BitsLeft += 8;
                 }
