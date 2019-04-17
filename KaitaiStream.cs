@@ -46,7 +46,7 @@ namespace Kaitai
         /// </summary>
         public bool IsEof
         {
-            get { return BaseStream.Position >= BaseStream.Length; }
+            get { return BaseStream.Position >= BaseStream.Length && BitsLeft == 0; }
         }
 
         /// <summary>
