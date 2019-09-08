@@ -32,6 +32,7 @@
     <Reference Include="System" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="KaitaiWriter.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="KaitaiStream.cs" />
     <Compile Include="KaitaiStruct.cs" />
