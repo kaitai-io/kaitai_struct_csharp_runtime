@@ -7,7 +7,7 @@ using System.Linq;
 namespace Kaitai
 {
     /// <summary>
-    /// The base Kaitai steam which exposes an API for the Kaitai Struct framework.
+    /// The base Kaitai stream which exposes an API for the Kaitai Struct framework.
     /// It's based off a <code>BinaryReader</code>, which is a little-endian reader.
     /// </summary>
     public partial class KaitaiStream : BinaryReader
