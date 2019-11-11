@@ -1,43 +1,39 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Release</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{8339A750-C407-4CE8-8E31-51CB2EFD3A4B}</ProjectGuid>
-    <OutputType>Library</OutputType>
-    <RootNamespace>Kaitai</RootNamespace>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NoWarn>1701;1702;CS1591</NoWarn>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <PackageId>KaitaiStruct.Runtime.CSharp</PackageId>
+    <Authors />
+    <Company>Kaitai Project</Company>
+    <Description>This library implements Kaitai Struct API for C#.</Description>
+    <Product>Kaitai Struct Runtime</Product>
+    <Copyright>Copyright © Kaitai Project 2016-2018</Copyright>
     <AssemblyName>Kaitai.Struct.Runtime</AssemblyName>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <RootNamespace>Kaitai</RootNamespace>
+    <PackageProjectUrl>http://kaitai.io/</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/kaitai-io/kaitai_struct_csharp_runtime</RepositoryUrl>
+    <PackageTags>Kaitai Struct File-Format Binary Protocols</PackageTags>
+    <PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
+    <PackageIcon>icon.png</PackageIcon>
+
+    <AssemblyVersion>0.7.0.0</AssemblyVersion>
+    <FileVersion>0.7.0.0</FileVersion>
+    <Version>0.7.0.0</Version>
+
+    <PackageReleaseNotes>
+      Changed default namespace to Kaitai.
+      Changed assembly name to Kaitai.Struct.Runtime.
+    </PackageReleaseNotes>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>bin\Debug</OutputPath>
-    <DefineConstants>DEBUG;</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <ConsolePause>false</ConsolePause>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DebugType>full</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>bin\Release</OutputPath>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <ConsolePause>false</ConsolePause>
-    <DocumentationFile>bin\Release\Kaitai.Struct.Runtime.xml</DocumentationFile>
-  </PropertyGroup>
+
   <ItemGroup>
-    <Reference Include="System" />
+    <None Include="LICENSE.txt" Pack="true" PackagePath="" />
+    <None Include="icon.png" Pack="true" PackagePath="" />
   </ItemGroup>
-  <ItemGroup>
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="KaitaiStream.cs" />
-    <Compile Include="KaitaiStruct.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="kaitai_struct_runtime_csharp.nuspec" />
-  </ItemGroup>
-  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+
 </Project>
