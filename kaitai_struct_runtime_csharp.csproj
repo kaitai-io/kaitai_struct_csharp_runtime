@@ -25,10 +25,7 @@
     <FileVersion>0.7.0.0</FileVersion>
     <Version>0.7.0.0</Version>
 
-    <PackageReleaseNotes>
-      Changed default namespace to Kaitai.
-      Changed assembly name to Kaitai.Struct.Runtime.
-    </PackageReleaseNotes>
+    <PackageReleaseNotes></PackageReleaseNotes>
   </PropertyGroup>
 
   <ItemGroup>
