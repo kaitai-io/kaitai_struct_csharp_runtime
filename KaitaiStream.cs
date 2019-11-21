@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
@@ -10,7 +10,7 @@ namespace Kaitai
     /// The base Kaitai stream which exposes an API for the Kaitai Struct framework.
     /// It's based off a <code>BinaryReader</code>, which is a little-endian reader.
     /// </summary>
-    public partial class KaitaiStream : BinaryReader
+    public partial class KaitaiStream : BinaryReader, IKaitaiStream
     {
         #region Constructors
 
