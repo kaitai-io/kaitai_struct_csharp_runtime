@@ -10,32 +10,42 @@ namespace Kaitai
     /// The base Kaitai stream which exposes an API for the Kaitai Struct framework.
     /// It's based off a <code>BinaryReader</code>, which is a little-endian reader.
     /// </summary>
-    public partial class KaitaiStream : BinaryReader, IKaitaiStream
+    public partial class KaitaiStream : IKaitaiStream
     {
         #region Constructors
 
-        public KaitaiStream(Stream stream) : base(stream)
+        static readonly bool IsLittleEndian = BitConverter.IsLittleEndian;
+
+        private ulong Bits = 0;
+        private int BitsLeft = 0;
+        private BinaryReader m_binaryReader;
+
+        protected Stream BaseStream;
+
+        public KaitaiStream(Stream stream)
         {
+            BaseStream = stream;
         }
 
         ///<summary>
         /// Creates a KaitaiStream backed by a file (RO)
         ///</summary>
-        public KaitaiStream(string file) : base(File.Open(file, FileMode.Open, FileAccess.Read, FileShare.Read))
+        public KaitaiStream(string file) : this(File.Open(file, FileMode.Open, FileAccess.Read, FileShare.Read))
         {
         }
 
         ///<summary>
         ///Creates a KaitaiStream backed by a byte buffer
         ///</summary>
-        public KaitaiStream(byte[] bytes) : base(new MemoryStream(bytes))
+        public KaitaiStream(byte[] bytes) : this(new MemoryStream(bytes))
         {
         }
-
-        private ulong Bits = 0;
-        private int BitsLeft = 0;
-
-        static readonly bool IsLittleEndian = BitConverter.IsLittleEndian;
+        
+        protected BinaryReader BinaryReader
+        {
+            get => m_binaryReader ?? (BinaryReader = new BinaryReader(BaseStream));
+            set => m_binaryReader = value;
+        }
 
         #endregion
 
@@ -86,7 +96,7 @@ namespace Kaitai
         /// <returns></returns>
         public sbyte ReadS1()
         {
-            return ReadSByte();
+            return BinaryReader.ReadSByte();
         }
 
         #region Big-endian
@@ -161,7 +171,7 @@ namespace Kaitai
         /// <returns></returns>
         public byte ReadU1()
         {
-            return ReadByte();
+            return BinaryReader.ReadByte();
         }
 
         #region Big-endian
@@ -370,7 +380,7 @@ namespace Kaitai
         {
             if (count < 0 || count > Int32.MaxValue)
                 throw new ArgumentOutOfRangeException("requested " + count + " bytes, while only non-negative int32 amount of bytes possible");
-            byte[] bytes = base.ReadBytes((int) count);
+            byte[] bytes = BinaryReader.ReadBytes((int) count);
             if (bytes.Length < count)
                 throw new EndOfStreamException("requested " + count + " bytes, but got only " + bytes.Length + " bytes");
             return bytes;
@@ -385,7 +395,7 @@ namespace Kaitai
         {
             if (count > Int32.MaxValue)
                 throw new ArgumentOutOfRangeException("requested " + count + " bytes, while only non-negative int32 amount of bytes possible");
-            byte[] bytes = base.ReadBytes((int)count);
+            byte[] bytes = BinaryReader.ReadBytes((int)count);
             if (bytes.Length < (int)count)
                 throw new EndOfStreamException("requested " + count + " bytes, but got only " + bytes.Length + " bytes");
             return bytes;
@@ -443,7 +453,7 @@ namespace Kaitai
                     break;
                 }
 
-                byte b = ReadByte();
+                byte b = BinaryReader.ReadByte();
                 if (b == terminator)
                 {
                     if (includeTerminator) bytes.Add(b);
