@@ -27,16 +27,16 @@ namespace Kaitai
             BaseStream = stream;
         }
 
-        ///<summary>
+        /// <summary>
         /// Creates a KaitaiStream backed by a file (RO)
-        ///</summary>
+        /// </summary>
         public KaitaiStream(string file) : this(File.Open(file, FileMode.Open, FileAccess.Read, FileShare.Read))
         {
         }
 
-        ///<summary>
-        ///Creates a KaitaiStream backed by a byte buffer
-        ///</summary>
+        /// <summary>
+        /// Creates a KaitaiStream backed by a byte buffer
+        /// </summary>
         public KaitaiStream(byte[] bytes) : this(new MemoryStream(bytes))
         {
         }

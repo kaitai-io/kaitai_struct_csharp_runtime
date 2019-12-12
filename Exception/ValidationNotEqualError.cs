@@ -3,8 +3,8 @@
 namespace Kaitai
 {
     /// <summary>
-    ///     Signals validation failure: we required "actual" value to be equal to
-    ///     "expected", but it turned out that it's not.
+    /// Signals validation failure: we required "actual" value to be equal to
+    /// "expected", but it turned out that it's not.
     /// </summary>
     public class ValidationNotEqualError : ValidationFailedError
     {

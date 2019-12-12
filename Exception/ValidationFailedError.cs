@@ -3,8 +3,8 @@
 namespace Kaitai
 {
     /// <summary>
-    ///     Common ancestor for all validation failures. Stores pointer to
-    ///     KaitaiStream IO object which was involved in an error.
+    /// Common ancestor for all validation failures. Stores pointer to
+    /// KaitaiStream IO object which was involved in an error.
     /// </summary>
     public class ValidationFailedError : KaitaiStructError
     {

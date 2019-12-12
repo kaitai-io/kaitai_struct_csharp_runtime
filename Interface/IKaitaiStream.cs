@@ -3,130 +3,130 @@
     public interface IKaitaiStream
     {
         /// <summary>
-        ///     Check if the stream position is at the end of the stream
+        /// Check if the stream position is at the end of the stream
         /// </summary>
         bool IsEof { get; }
 
         /// <summary>
-        ///     Get the current position in the stream
+        /// Get the current position in the stream
         /// </summary>
         long Pos { get; }
 
         /// <summary>
-        ///     Get the total length of the stream (ie. file size)
+        /// Get the total length of the stream (ie. file size)
         /// </summary>
         long Size { get; }
 
         /// <summary>
-        ///     Seek to a specific position from the beginning of the stream
+        /// Seek to a specific position from the beginning of the stream
         /// </summary>
         /// <param name="position">The position to seek to</param>
         void Seek(long position);
 
         /// <summary>
-        ///     Read a signed byte from the stream
+        /// Read a signed byte from the stream
         /// </summary>
         /// <returns></returns>
         sbyte ReadS1();
 
         /// <summary>
-        ///     Read a signed short from the stream (big endian)
+        /// Read a signed short from the stream (big endian)
         /// </summary>
         /// <returns></returns>
         short ReadS2be();
 
         /// <summary>
-        ///     Read a signed int from the stream (big endian)
+        /// Read a signed int from the stream (big endian)
         /// </summary>
         /// <returns></returns>
         int ReadS4be();
 
         /// <summary>
-        ///     Read a signed long from the stream (big endian)
+        /// Read a signed long from the stream (big endian)
         /// </summary>
         /// <returns></returns>
         long ReadS8be();
 
         /// <summary>
-        ///     Read a signed short from the stream (little endian)
+        /// Read a signed short from the stream (little endian)
         /// </summary>
         /// <returns></returns>
         short ReadS2le();
 
         /// <summary>
-        ///     Read a signed int from the stream (little endian)
+        /// Read a signed int from the stream (little endian)
         /// </summary>
         /// <returns></returns>
         int ReadS4le();
 
         /// <summary>
-        ///     Read a signed long from the stream (little endian)
+        /// Read a signed long from the stream (little endian)
         /// </summary>
         /// <returns></returns>
         long ReadS8le();
 
         /// <summary>
-        ///     Read an unsigned byte from the stream
+        /// Read an unsigned byte from the stream
         /// </summary>
         /// <returns></returns>
         byte ReadU1();
 
         /// <summary>
-        ///     Read an unsigned short from the stream (big endian)
+        /// Read an unsigned short from the stream (big endian)
         /// </summary>
         /// <returns></returns>
         ushort ReadU2be();
 
         /// <summary>
-        ///     Read an unsigned int from the stream (big endian)
+        /// Read an unsigned int from the stream (big endian)
         /// </summary>
         /// <returns></returns>
         uint ReadU4be();
 
         /// <summary>
-        ///     Read an unsigned long from the stream (big endian)
+        /// Read an unsigned long from the stream (big endian)
         /// </summary>
         /// <returns></returns>
         ulong ReadU8be();
 
         /// <summary>
-        ///     Read an unsigned short from the stream (little endian)
+        /// Read an unsigned short from the stream (little endian)
         /// </summary>
         /// <returns></returns>
         ushort ReadU2le();
 
         /// <summary>
-        ///     Read an unsigned int from the stream (little endian)
+        /// Read an unsigned int from the stream (little endian)
         /// </summary>
         /// <returns></returns>
         uint ReadU4le();
 
         /// <summary>
-        ///     Read an unsigned long from the stream (little endian)
+        /// Read an unsigned long from the stream (little endian)
         /// </summary>
         /// <returns></returns>
         ulong ReadU8le();
 
         /// <summary>
-        ///     Read a single-precision floating point value from the stream (big endian)
+        /// Read a single-precision floating point value from the stream (big endian)
         /// </summary>
         /// <returns></returns>
         float ReadF4be();
 
         /// <summary>
-        ///     Read a double-precision floating point value from the stream (big endian)
+        /// Read a double-precision floating point value from the stream (big endian)
         /// </summary>
         /// <returns></returns>
         double ReadF8be();
 
         /// <summary>
-        ///     Read a single-precision floating point value from the stream (little endian)
+        /// Read a single-precision floating point value from the stream (little endian)
         /// </summary>
         /// <returns></returns>
         float ReadF4le();
 
         /// <summary>
-        ///     Read a double-precision floating point value from the stream (little endian)
+        /// Read a double-precision floating point value from the stream (little endian)
         /// </summary>
         /// <returns></returns>
         double ReadF8le();
@@ -136,27 +136,27 @@
         ulong ReadBitsIntLe(int n);
 
         /// <summary>
-        ///     Read a fixed number of bytes from the stream
+        /// Read a fixed number of bytes from the stream
         /// </summary>
         /// <param name="count">The number of bytes to read</param>
         /// <returns></returns>
         byte[] ReadBytes(long count);
 
         /// <summary>
-        ///     Read a fixed number of bytes from the stream
+        /// Read a fixed number of bytes from the stream
         /// </summary>
         /// <param name="count">The number of bytes to read</param>
         /// <returns></returns>
         byte[] ReadBytes(ulong count);
 
         /// <summary>
-        ///     Read all the remaining bytes from the stream until the end is reached
+        /// Read all the remaining bytes from the stream until the end is reached
         /// </summary>
         /// <returns></returns>
         byte[] ReadBytesFull();
 
         /// <summary>
-        ///     Read a terminated string from the stream
+        /// Read a terminated string from the stream
         /// </summary>
         /// <param name="terminator">The string terminator value</param>
         /// <param name="includeTerminator">True to include the terminator in the returned string</param>
@@ -166,14 +166,14 @@
         byte[] ReadBytesTerm(byte terminator, bool includeTerminator, bool consumeTerminator, bool eosError);
 
         /// <summary>
-        ///     Read a specific set of bytes and assert that they are the same as an expected result
+        /// Read a specific set of bytes and assert that they are the same as an expected result
         /// </summary>
         /// <param name="expected">The expected result</param>
         /// <returns></returns>
         byte[] EnsureFixedContents(byte[] expected);
 
         /// <summary>
-        ///     Performs XOR processing with given data, XORing every byte of the input with a single value.
+        /// Performs XOR processing with given data, XORing every byte of the input with a single value.
         /// </summary>
         /// <param name="value">The data toe process</param>
         /// <param name="key">The key value to XOR with</param>
@@ -181,8 +181,8 @@
         byte[] ProcessXor(byte[] value, int key);
 
         /// <summary>
-        ///     Performs XOR processing with given data, XORing every byte of the input with a key
-        ///     array, repeating from the beginning of the key array if necessary
+        /// Performs XOR processing with given data, XORing every byte of the input with a key
+        /// array, repeating from the beginning of the key array if necessary
         /// </summary>
         /// <param name="value">The data toe process</param>
         /// <param name="key">The key array to XOR with</param>
@@ -190,8 +190,8 @@
         byte[] ProcessXor(byte[] value, byte[] key);
 
         /// <summary>
-        ///     Performs a circular left rotation shift for a given buffer by a given amount of bits.
-        ///     Pass a negative amount to rotate right.
+        /// Performs a circular left rotation shift for a given buffer by a given amount of bits.
+        /// Pass a negative amount to rotate right.
         /// </summary>
         /// <param name="data">The data to rotate</param>
         /// <param name="amount">The number of bytes to rotate by</param>
@@ -200,7 +200,7 @@
         byte[] ProcessRotateLeft(byte[] data, int amount, int groupSize);
 
         /// <summary>
-        ///     Inflates a deflated zlib byte stream
+        /// Inflates a deflated zlib byte stream
         /// </summary>
         /// <param name="data">The data to deflate</param>
         /// <returns>The deflated result</returns>
