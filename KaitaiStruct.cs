@@ -4,17 +4,17 @@
     {
         protected KaitaiStream m_io;
 
+        protected KaitaiStruct(KaitaiStream io)
+        {
+            m_io = io;
+        }
+
         public KaitaiStream M_Io
         {
             get
             {
                 return m_io;
             }
-        }
-
-        public KaitaiStruct(KaitaiStream io)
-        {
-            m_io = io;
         }
     }
 }
