@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
-using System.Linq;
 
 namespace Kaitai
 {
@@ -16,8 +15,8 @@ namespace Kaitai
 
         static readonly bool IsLittleEndian = BitConverter.IsLittleEndian;
 
-        private ulong Bits = 0;
-        private int BitsLeft = 0;
+        private ulong Bits;
+        private int BitsLeft;
         private BinaryReader m_binaryReader;
 
         protected Stream BaseStream;
@@ -40,7 +39,7 @@ namespace Kaitai
         public KaitaiStream(byte[] bytes) : this(new MemoryStream(bytes))
         {
         }
-        
+
         protected BinaryReader BinaryReader
         {
             get => m_binaryReader ?? (BinaryReader = new BinaryReader(BaseStream));
@@ -304,7 +303,7 @@ namespace Kaitai
                 // 1 bit  => 1 byte
                 // 8 bits => 1 byte
                 // 9 bits => 2 bytes
-                int bytesNeeded = ((bitsNeeded - 1) / 8) + 1;
+                int bytesNeeded = (bitsNeeded - 1) / 8 + 1;
                 byte[] buf = ReadBytes(bytesNeeded);
                 for (int i = 0; i < buf.Length; i++)
                 {
@@ -339,11 +338,11 @@ namespace Kaitai
                 // 1 bit  => 1 byte
                 // 8 bits => 1 byte
                 // 9 bits => 2 bytes
-                int bytesNeeded = ((bitsNeeded - 1) / 8) + 1;
+                int bytesNeeded = (bitsNeeded - 1) / 8 + 1;
                 byte[] buf = ReadBytes(bytesNeeded);
                 for (int i = 0; i < buf.Length; i++)
                 {
-                    ulong v = (ulong)((ulong)buf[i] << BitsLeft);
+                    ulong v = (ulong)buf[i] << BitsLeft;
                     Bits |= v;
                     BitsLeft += 8;
                 }
@@ -353,7 +352,7 @@ namespace Kaitai
             ulong mask = GetMaskOnes(n);
 
             // derive reading result
-            ulong res = (Bits & mask);
+            ulong res = Bits & mask;
 
             // remove bottom bits that we've just read by shifting
             Bits >>= n;
@@ -379,10 +378,10 @@ namespace Kaitai
         public byte[] ReadBytes(long count)
         {
             if (count < 0 || count > Int32.MaxValue)
-                throw new ArgumentOutOfRangeException("requested " + count + " bytes, while only non-negative int32 amount of bytes possible");
-            byte[] bytes = BinaryReader.ReadBytes((int) count);
+                throw new ArgumentOutOfRangeException($"requested {count} bytes, while only non-negative int32 amount of bytes possible");
+            byte[] bytes = BinaryReader.ReadBytes((int)count);
             if (bytes.Length < count)
-                throw new EndOfStreamException("requested " + count + " bytes, but got only " + bytes.Length + " bytes");
+                throw new EndOfStreamException($"requested {count} bytes, but got only {bytes.Length} bytes");
             return bytes;
         }
 
@@ -394,10 +393,10 @@ namespace Kaitai
         public byte[] ReadBytes(ulong count)
         {
             if (count > Int32.MaxValue)
-                throw new ArgumentOutOfRangeException("requested " + count + " bytes, while only non-negative int32 amount of bytes possible");
+                throw new ArgumentOutOfRangeException($"requested {count} bytes, while only non-negative int32 amount of bytes possible");
             byte[] bytes = BinaryReader.ReadBytes((int)count);
             if (bytes.Length < (int)count)
-                throw new EndOfStreamException("requested " + count + " bytes, but got only " + bytes.Length + " bytes");
+                throw new EndOfStreamException($"requested {count} bytes, but got only {bytes.Length} bytes");
             return bytes;
         }
 
@@ -449,7 +448,8 @@ namespace Kaitai
             {
                 if (IsEof)
                 {
-                    if (eosError) throw new EndOfStreamException(string.Format("End of stream reached, but no terminator `{0}` found", terminator));
+                    if (eosError)
+                        throw new EndOfStreamException($"End of stream reached, but no terminator `{terminator}` found");
                     break;
                 }
 
@@ -460,8 +460,10 @@ namespace Kaitai
                     if (!consumeTerminator) Seek(Pos - 1);
                     break;
                 }
+
                 bytes.Add(b);
             }
+
             return bytes.ToArray();
         }
 
@@ -476,13 +478,14 @@ namespace Kaitai
 
             if (bytes.Length != expected.Length)
             {
-                throw new Exception(string.Format("Expected bytes: {0} ({1} bytes), Instead got: {2} ({3} bytes)", Convert.ToBase64String(expected), expected.Length, Convert.ToBase64String(bytes), bytes.Length));
+                throw new Exception($"Expected bytes: {Convert.ToBase64String(expected)} ({expected.Length} bytes), Instead got: {Convert.ToBase64String(bytes)} ({bytes.Length} bytes)");
             }
+
             for (int i = 0; i < bytes.Length; i++)
             {
                 if (bytes[i] != expected[i])
                 {
-                    throw new Exception(string.Format("Expected bytes: {0} ({1} bytes), Instead got: {2} ({3} bytes)", Convert.ToBase64String(expected), expected.Length, Convert.ToBase64String(bytes), bytes.Length));
+                    throw new Exception($"Expected bytes: {Convert.ToBase64String(expected)} ({expected.Length} bytes), Instead got: {Convert.ToBase64String(bytes)} ({bytes.Length} bytes)");
                 }
             }
 
@@ -533,6 +536,7 @@ namespace Kaitai
             {
                 result[i] = (byte)(value[i] ^ key);
             }
+
             return result;
         }
 
@@ -551,6 +555,7 @@ namespace Kaitai
             {
                 result[i] = (byte)(value[i] ^ key[j]);
             }
+
             return result;
         }
 
@@ -564,7 +569,8 @@ namespace Kaitai
         /// <returns></returns>
         public byte[] ProcessRotateLeft(byte[] data, int amount, int groupSize)
         {
-            if (amount > 7 || amount < -7) throw new ArgumentException("Rotation of more than 7 cannot be performed.", "amount");
+            if (amount > 7 || amount < -7)
+                throw new ArgumentException("Rotation of more than 7 cannot be performed.", "amount");
             if (amount < 0) amount += 8; // Rotation of -2 is the same as rotation of +6
 
             byte[] r = new byte[data.Length];
@@ -575,12 +581,14 @@ namespace Kaitai
                     {
                         byte bits = data[i];
                         // http://stackoverflow.com/a/812039
-                        r[i] = (byte) ((bits << amount) | (bits >> (8 - amount)));
+                        r[i] = (byte)((bits << amount) | (bits >> (8 - amount)));
                     }
+
                     break;
                 default:
-                    throw new NotImplementedException(string.Format("Unable to rotate a group of {0} bytes yet", groupSize));
+                    throw new NotImplementedException($"Unable to rotate a group of {groupSize} bytes yet");
             }
+
             return r;
         }
 
@@ -597,7 +605,8 @@ namespace Kaitai
             // There's also 4 checksum bytes at the end of the stream.
 
             byte zlibCmf = data[0];
-            if ((zlibCmf & 0x0F) != 0x08) throw new NotSupportedException("Only the DEFLATE algorithm is supported for zlib data.");
+            if ((zlibCmf & 0x0F) != 0x08)
+                throw new NotSupportedException("Only the DEFLATE algorithm is supported for zlib data.");
 
             const int zlibFooter = 4;
             int zlibHeader = 2;
@@ -674,18 +683,20 @@ namespace Kaitai
             int al = a.Length;
             int bl = b.Length;
             int minLen = al < bl ? al : bl;
-            for (int i = 0; i < minLen; i++) {
+            for (int i = 0; i < minLen; i++)
+            {
                 int cmp = a[i] - b[i];
                 if (cmp != 0)
                     return cmp;
             }
 
             // Reached the end of at least one of the arrays
-            if (al == bl) {
+            if (al == bl)
+            {
                 return 0;
-            } else {
-                return al - bl;
             }
+
+            return al - bl;
         }
 
         #endregion

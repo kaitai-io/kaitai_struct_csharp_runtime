@@ -12,7 +12,7 @@ namespace Kaitai
         protected string srcPath;
 
         public KaitaiStructError(string msg, string srcPath)
-            : base(srcPath + ": " + msg)
+            : base($"srcPath: {msg}")
         {
             this.srcPath = srcPath;
         }

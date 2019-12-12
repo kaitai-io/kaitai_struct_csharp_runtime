@@ -11,7 +11,7 @@ namespace Kaitai
         protected KaitaiStream io;
 
         public ValidationFailedError(string msg, KaitaiStream io, string srcPath)
-            : base("at pos " + io.Pos + ": validation failed: " + msg, srcPath)
+            : base($"at pos {io.Pos}: validation failed: {msg}", srcPath)
         {
             this.io = io;
         }
@@ -26,7 +26,7 @@ namespace Kaitai
                     sb.Append(' ');
                 }
 
-                sb.Append(string.Format("{0:X2}", arr[i]));
+                sb.Append($"{arr[i]:X2}");
             }
 
             sb.Append(']');

@@ -13,7 +13,7 @@ namespace Kaitai
         protected Object expected;
 
         public ValidationNotEqualError(byte[] expected, byte[] actual, KaitaiStream io, string srcPath)
-            : base("not equal, expected " + ByteArrayToHex(expected) + ", but got " + ByteArrayToHex(actual), io,
+            : base($"not equal, expected {ByteArrayToHex(expected)}, but got {ByteArrayToHex(actual)}", io,
                 srcPath)
         {
             this.expected = expected;
@@ -21,7 +21,7 @@ namespace Kaitai
         }
 
         public ValidationNotEqualError(Object expected, Object actual, KaitaiStream io, string srcPath)
-            : base("not equal, expected " + expected + ", but got " + actual, io, srcPath)
+            : base($"not equal, expected {expected}, but got {actual}", io, srcPath)
         {
             this.expected = expected;
             this.actual = actual;
