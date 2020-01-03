@@ -4,15 +4,61 @@ using System.IO.Compression;
 
 namespace Kaitai
 {
-    public class Utilities
+    public abstract class KaitaiStreamBase : IKaitaiStreamBase
     {
+        protected static readonly bool IsLittleEndian = BitConverter.IsLittleEndian;
+
+        /// <summary>
+        /// Check if the stream position is at the end of the stream
+        /// </summary>
+        public abstract bool IsEof { get; }
+
+        /// <summary>
+        /// Get the current position in the stream
+        /// </summary>
+        public abstract long Pos { get; }
+
+        /// <summary>
+        /// Get the total length of the stream (ie. file size)
+        /// </summary>
+        public abstract long Size { get; }
+
+        public abstract void AlignToByte();
+
+        public static byte[] BytesStripRight(byte[] src, byte padByte)
+        {
+            int newLen = src.Length;
+            while (newLen > 0 && src[newLen - 1] == padByte)
+                newLen--;
+
+            byte[] dst = new byte[newLen];
+            Array.Copy(src, dst, newLen);
+            return dst;
+        }
+
+        public static byte[] BytesTerminate(byte[] src, byte terminator, bool includeTerminator)
+        {
+            int newLen = 0;
+            int maxLen = src.Length;
+
+            while (newLen < maxLen && src[newLen] != terminator)
+                newLen++;
+
+            if (includeTerminator && newLen < maxLen)
+                newLen++;
+
+            byte[] dst = new byte[newLen];
+            Array.Copy(src, dst, newLen);
+            return dst;
+        }
+
         /// <summary>
         /// Performs XOR processing with given data, XORing every byte of the input with a single value.
         /// </summary>
         /// <param name="value">The data toe process</param>
         /// <param name="key">The key value to XOR with</param>
         /// <returns>Processed data</returns>
-        public static byte[] ProcessXor(byte[] value, int key)
+        public byte[] ProcessXor(byte[] value, int key)
         {
             byte[] result = new byte[value.Length];
             for (int i = 0; i < value.Length; i++)
@@ -30,7 +76,7 @@ namespace Kaitai
         /// <param name="value">The data toe process</param>
         /// <param name="key">The key array to XOR with</param>
         /// <returns>Processed data</returns>
-        public static byte[] ProcessXor(byte[] value, byte[] key)
+        public byte[] ProcessXor(byte[] value, byte[] key)
         {
             int keyLen = key.Length;
             byte[] result = new byte[value.Length];
@@ -50,7 +96,7 @@ namespace Kaitai
         /// <param name="amount">The number of bytes to rotate by</param>
         /// <param name="groupSize"></param>
         /// <returns></returns>
-        public static byte[] ProcessRotateLeft(byte[] data, int amount, int groupSize)
+        public byte[] ProcessRotateLeft(byte[] data, int amount, int groupSize)
         {
             if (amount > 7 || amount < -7)
                 throw new ArgumentException("Rotation of more than 7 cannot be performed.", "amount");
@@ -80,7 +126,7 @@ namespace Kaitai
         /// </summary>
         /// <param name="data">The data to deflate</param>
         /// <returns>The deflated result</returns>
-        public static byte[] ProcessZlib(byte[] data)
+        public byte[] ProcessZlib(byte[] data)
         {
             // See RFC 1950 (https://tools.ietf.org/html/rfc1950)
             // zlib adds a header to DEFLATE streams - usually 2 bytes,
@@ -109,33 +155,6 @@ namespace Kaitai
                     }
                 }
             }
-        }
-
-        public static byte[] BytesStripRight(byte[] src, byte padByte)
-        {
-            int newLen = src.Length;
-            while (newLen > 0 && src[newLen - 1] == padByte)
-                newLen--;
-
-            byte[] dst = new byte[newLen];
-            Array.Copy(src, dst, newLen);
-            return dst;
-        }
-
-        public static byte[] BytesTerminate(byte[] src, byte terminator, bool includeTerminator)
-        {
-            int newLen = 0;
-            int maxLen = src.Length;
-
-            while (newLen < maxLen && src[newLen] != terminator)
-                newLen++;
-
-            if (includeTerminator && newLen < maxLen)
-                newLen++;
-
-            byte[] dst = new byte[newLen];
-            Array.Copy(src, dst, newLen);
-            return dst;
         }
 
         /// <summary>
@@ -204,5 +223,7 @@ namespace Kaitai
 
             return al - bl;
         }
+
+        protected static ulong GetMaskOnes(int n) => n == 64 ? 0xffffffffffffffffUL : (1UL << n) - 1;
     }
 }

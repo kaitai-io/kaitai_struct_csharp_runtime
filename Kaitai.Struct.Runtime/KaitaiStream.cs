@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.IO.Compression;
 
 namespace Kaitai
 {
@@ -9,12 +8,9 @@ namespace Kaitai
     /// The base Kaitai stream which exposes an API for the Kaitai Struct framework.
     /// It's based off a <code>BinaryReader</code>, which is a little-endian reader.
     /// </summary>
-    public partial class KaitaiStream : IKaitaiStream
+    public partial class KaitaiStream : KaitaiStreamBase, IKaitaiStream
     {
         #region Constructors
-
-        static readonly bool IsLittleEndian = BitConverter.IsLittleEndian;
-
         private ulong Bits;
         private int BitsLeft;
         private BinaryReader m_binaryReader;
@@ -53,7 +49,7 @@ namespace Kaitai
         /// <summary>
         /// Check if the stream position is at the end of the stream
         /// </summary>
-        public bool IsEof
+        public override bool IsEof
         {
             get { return BaseStream.Position >= BaseStream.Length && BitsLeft == 0; }
         }
@@ -70,7 +66,7 @@ namespace Kaitai
         /// <summary>
         /// Get the current position in the stream
         /// </summary>
-        public long Pos
+        public override long Pos
         {
             get { return BaseStream.Position; }
         }
@@ -78,7 +74,7 @@ namespace Kaitai
         /// <summary>
         /// Get the total length of the stream (ie. file size)
         /// </summary>
-        public long Size
+        public override long Size
         {
             get { return BaseStream.Length; }
         }
@@ -289,7 +285,7 @@ namespace Kaitai
 
         #region Unaligned bit values
 
-        public void AlignToByte()
+        public override void AlignToByte()
         {
             Bits = 0;
             BitsLeft = 0;
@@ -359,11 +355,6 @@ namespace Kaitai
             BitsLeft -= n;
 
             return res;
-        }
-
-        private static ulong GetMaskOnes(int n)
-        {
-            return n == 64 ? 0xffffffffffffffffUL : (1UL << n) - 1;
         }
 
         #endregion
@@ -441,7 +432,10 @@ namespace Kaitai
         /// <param name="consumeTerminator">True to consume the terminator byte before returning</param>
         /// <param name="eosError">True to throw an error when the EOS was reached before the terminator</param>
         /// <returns></returns>
-        public byte[] ReadBytesTerm(byte terminator, bool includeTerminator, bool consumeTerminator, bool eosError)
+        public byte[] ReadBytesTerm(byte terminator,
+            bool includeTerminator,
+            bool consumeTerminator,
+            bool eosError)
         {
             List<byte> bytes = new List<byte>();
             while (true)
@@ -490,112 +484,6 @@ namespace Kaitai
             }
 
             return bytes;
-        }
-
-        public static byte[] BytesStripRight(byte[] src, byte padByte)
-        {
-            return Utilities.BytesStripRight(src, padByte);
-        }
-
-        public static byte[] BytesTerminate(byte[] src, byte terminator, bool includeTerminator)
-        {
-            return Utilities.BytesTerminate(src, terminator, includeTerminator);
-        }
-        #endregion
-
-        #region Byte array processing
-
-        /// <summary>
-        /// Performs XOR processing with given data, XORing every byte of the input with a single value.
-        /// </summary>
-        /// <param name="value">The data toe process</param>
-        /// <param name="key">The key value to XOR with</param>
-        /// <returns>Processed data</returns>
-        public byte[] ProcessXor(byte[] value, int key)
-        {
-            return Utilities.ProcessXor(value, key);
-        }
-
-        /// <summary>
-        /// Performs XOR processing with given data, XORing every byte of the input with a key
-        /// array, repeating from the beginning of the key array if necessary
-        /// </summary>
-        /// <param name="value">The data toe process</param>
-        /// <param name="key">The key array to XOR with</param>
-        /// <returns>Processed data</returns>
-        public byte[] ProcessXor(byte[] value, byte[] key)
-        {
-            return Utilities.ProcessXor(value, key);
-        }
-
-        /// <summary>
-        /// Performs a circular left rotation shift for a given buffer by a given amount of bits.
-        /// Pass a negative amount to rotate right.
-        /// </summary>
-        /// <param name="data">The data to rotate</param>
-        /// <param name="amount">The number of bytes to rotate by</param>
-        /// <param name="groupSize"></param>
-        /// <returns></returns>
-        public byte[] ProcessRotateLeft(byte[] data, int amount, int groupSize)
-        {
-            return Utilities.ProcessRotateLeft(data, amount, groupSize);
-        }
-
-        /// <summary>
-        /// Inflates a deflated zlib byte stream
-        /// </summary>
-        /// <param name="data">The data to deflate</param>
-        /// <returns>The deflated result</returns>
-        public byte[] ProcessZlib(byte[] data)
-        {
-            return Utilities.ProcessZlib(data);
-        }
-
-        #endregion
-
-        #region Misc utility methods
-
-        /// <summary>
-        /// Performs modulo operation between two integers.
-        /// </summary>
-        /// <remarks>
-        /// This method is required because C# lacks a "true" modulo
-        /// operator, the % operator rather being the "remainder"
-        /// operator. We want mod operations to always be positive.
-        /// </remarks>
-        /// <param name="a">The value to be divided</param>
-        /// <param name="b">The value to divide by. Must be greater than zero.</param>
-        /// <returns>The result of the modulo opertion. Will always be positive.</returns>
-        public static int Mod(int a, int b)
-        {
-            return Utilities.Mod(a, b);
-        }
-
-        /// <summary>
-        /// Performs modulo operation between two integers.
-        /// </summary>
-        /// <remarks>
-        /// This method is required because C# lacks a "true" modulo
-        /// operator, the % operator rather being the "remainder"
-        /// operator. We want mod operations to always be positive.
-        /// </remarks>
-        /// <param name="a">The value to be divided</param>
-        /// <param name="b">The value to divide by. Must be greater than zero.</param>
-        /// <returns>The result of the modulo opertion. Will always be positive.</returns>
-        public static long Mod(long a, long b)
-        {
-            return Utilities.Mod(a, b);
-        }
-
-        /// <summary>
-        /// Compares two byte arrays in lexicographical order.
-        /// </summary>
-        /// <returns>negative number if a is less than b, <c>0</c> if a is equal to b, positive number if a is greater than b.</returns>
-        /// <param name="a">First byte array to compare</param>
-        /// <param name="b">Second byte array to compare.</param>
-        public static int ByteArrayCompare(byte[] a, byte[] b)
-        {
-            return Utilities.ByteArrayCompare(a, b);
         }
 
         #endregion
