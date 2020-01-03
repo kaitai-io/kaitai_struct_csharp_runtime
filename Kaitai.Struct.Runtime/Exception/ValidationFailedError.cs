@@ -8,9 +8,9 @@ namespace Kaitai
     /// </summary>
     public class ValidationFailedError : KaitaiStructError
     {
-        protected KaitaiStream io;
+        protected IKaitaiStreamBase io;
 
-        public ValidationFailedError(string msg, KaitaiStream io, string srcPath)
+        public ValidationFailedError(string msg, IKaitaiStreamBase io, string srcPath)
             : base($"at pos {io.Pos}: validation failed: {msg}", srcPath)
         {
             this.io = io;
