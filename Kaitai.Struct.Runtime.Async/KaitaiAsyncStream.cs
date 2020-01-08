@@ -13,19 +13,16 @@ namespace Kaitai.Async
 
         private ulong _bits = 0;
         private int _bitsLeft = 0;
-        private AsyncBinaryReader _asyncBinaryReader;
 
-        protected AsyncBinaryReader AsyncBinaryReader
-        {
-            get => _asyncBinaryReader ?? (_asyncBinaryReader = new AsyncBinaryReader(BaseStream));
-            set => _asyncBinaryReader = value;
-        }
+        protected AsyncBinaryReader AsyncBinaryReader { get; }
 
         #region Constructors
 
         public KaitaiAsyncStream(Stream stream)
         {
             BaseStream = stream;
+            AsyncBinaryReader = new AsyncBinaryReader(BaseStream);
+
         }
 
         ///<summary>
@@ -306,7 +303,7 @@ namespace Kaitai.Async
         {
             byte[] bytes = await ReadBytesAsync(expected.Length);
 
-            if (bytes.Length != expected.Length)
+            if (bytes.Length != expected.Length) //TODO Is this necessary?
             {
                 throw new Exception(
                   $"Expected bytes: {Convert.ToBase64String(expected)} ({expected.Length} bytes), Instead got: {Convert.ToBase64String(bytes)} ({bytes.Length} bytes)");
