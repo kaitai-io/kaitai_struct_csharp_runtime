@@ -46,30 +46,16 @@ namespace Kaitai.Async
 
         #region Stream positioning
 
-        /// <summary>
-        /// Check if the stream position is at the end of the stream
-        /// </summary>
         public override bool IsEof => BaseStream.Position >= BaseStream.Length && _bitsLeft == 0;
 
-        /// <summary>
-        /// Seek to a specific position from the beginning of the stream
-        /// </summary>
-        /// <param name="position">The position to seek to</param>
-        /// <remarks>.NET Stream API does not support SeekAsync, therefore, consumer needs to define his own implementation.</remarks>
         public virtual Task SeekAsync(long position)
         {
             BaseStream.Seek(position, SeekOrigin.Begin);
             return Task.CompletedTask;
         }
 
-        /// <summary>
-        /// Get the current position in the stream
-        /// </summary>
         public override long Pos => BaseStream.Position;
 
-        /// <summary>
-        /// Get the total length of the stream (ie. file size)
-        /// </summary>
         public override long Size => BaseStream.Length;
 
         #endregion
@@ -78,52 +64,24 @@ namespace Kaitai.Async
 
         #region Signed
 
-        /// <summary>
-        /// Read a signed byte from the stream
-        /// </summary>
-        /// <returns></returns>
         public async Task<sbyte> ReadS1Async() => await AsyncBinaryReader.ReadSByteAsync();
 
         #region Big-endian
 
-        /// <summary>
-        /// Read a signed short from the stream (big endian)
-        /// </summary>
-        /// <returns></returns>
         public async Task<short> ReadS2beAsync() => BitConverter.ToInt16(await ReadBytesNormalisedBigEndianAsync(2), 0);
 
-        /// <summary>
-        /// Read a signed int from the stream (big endian)
-        /// </summary>
-        /// <returns></returns>
         public async Task<int> ReadS4beAsync() => BitConverter.ToInt32(await ReadBytesNormalisedBigEndianAsync(4), 0);
 
-        /// <summary>
-        /// Read a signed long from the stream (big endian)
-        /// </summary>
-        /// <returns></returns>
         public async Task<long> ReadS8beAsync() => BitConverter.ToInt64(await ReadBytesNormalisedBigEndianAsync(8), 0);
 
         #endregion
 
         #region Little-endian
 
-        /// <summary>
-        /// Read a signed short from the stream (little endian)
-        /// </summary>
-        /// <returns></returns>
         public async Task<short> ReadS2leAsync() => BitConverter.ToInt16(await ReadBytesNormalisedLittleEndianAsync(2), 0);
 
-        /// <summary>
-        /// Read a signed int from the stream (little endian)
-        /// </summary>
-        /// <returns></returns>
         public async Task<int> ReadS4leAsync() => BitConverter.ToInt32(await ReadBytesNormalisedLittleEndianAsync(4), 0);
 
-        /// <summary>
-        /// Read a signed long from the stream (little endian)
-        /// </summary>
-        /// <returns></returns>
         public async Task<long> ReadS8leAsync() => BitConverter.ToInt64(await ReadBytesNormalisedLittleEndianAsync(8), 0);
 
         #endregion
@@ -132,52 +90,24 @@ namespace Kaitai.Async
 
         #region Unsigned
 
-        /// <summary>
-        /// Read an unsigned byte from the stream
-        /// </summary>
-        /// <returns></returns>
         public async Task<byte> ReadU1Async() => await AsyncBinaryReader.ReadByteAsync();
 
         #region Big-endian
 
-        /// <summary>
-        /// Read an unsigned short from the stream (big endian)
-        /// </summary>
-        /// <returns></returns>
         public async Task<ushort> ReadU2beAsync() => BitConverter.ToUInt16(await ReadBytesNormalisedBigEndianAsync(2), 0);
 
-        /// <summary>
-        /// Read an unsigned int from the stream (big endian)
-        /// </summary>
-        /// <returns></returns>
         public async Task<uint> ReadU4beAsync() => BitConverter.ToUInt32(await ReadBytesNormalisedBigEndianAsync(4), 0);
 
-        /// <summary>
-        /// Read an unsigned long from the stream (big endian)
-        /// </summary>
-        /// <returns></returns>
         public async Task<ulong> ReadU8beAsync() => BitConverter.ToUInt64(await ReadBytesNormalisedBigEndianAsync(8), 0);
 
         #endregion
 
         #region Little-endian
 
-        /// <summary>
-        /// Read an unsigned short from the stream (little endian)
-        /// </summary>
-        /// <returns></returns>
         public async Task<ushort> ReadU2leAsync() => BitConverter.ToUInt16(await ReadBytesNormalisedLittleEndianAsync(2), 0);
 
-        /// <summary>
-        /// Read an unsigned int from the stream (little endian)
-        /// </summary>
-        /// <returns></returns>
         public async Task<uint> ReadU4leAsync() => BitConverter.ToUInt32(await ReadBytesNormalisedLittleEndianAsync(4), 0);
 
-        /// <summary>
-        /// Read an unsigned long from the stream (little endian)
-        /// </summary>
-        /// <returns></returns>
         public async Task<ulong> ReadU8leAsync() => BitConverter.ToUInt64(await ReadBytesNormalisedLittleEndianAsync(8), 0);
 
         #endregion
@@ -190,32 +120,16 @@ namespace Kaitai.Async
 
         #region Big-endian
 
-        /// <summary>
-        /// Read a single-precision floating point value from the stream (big endian)
-        /// </summary>
-        /// <returns></returns>
         public async Task<float> ReadF4beAsync() => BitConverter.ToSingle(await ReadBytesNormalisedBigEndianAsync(4), 0);
 
-        /// <summary>
-        /// Read a double-precision floating point value from the stream (big endian)
-        /// </summary>
-        /// <returns></returns>
         public async Task<double> ReadF8beAsync() => BitConverter.ToDouble(await ReadBytesNormalisedBigEndianAsync(8), 0);
 
         #endregion
 
         #region Little-endian
 
-        /// <summary>
-        /// Read a single-precision floating point value from the stream (little endian)
-        /// </summary>
-        /// <returns></returns>
         public async Task<float> ReadF4leAsync() => BitConverter.ToSingle(await ReadBytesNormalisedLittleEndianAsync(4), 0);
 
-        /// <summary>
-        /// Read a double-precision floating point value from the stream (little endian)
-        /// </summary>
-        /// <returns></returns>
         public async Task<double> ReadF8leAsync() => BitConverter.ToDouble(await ReadBytesNormalisedLittleEndianAsync(8), 0);
 
         #endregion
@@ -300,11 +214,6 @@ namespace Kaitai.Async
 
         #region Byte arrays
 
-        /// <summary>
-        /// Read a fixed number of bytes from the stream
-        /// </summary>
-        /// <param name="count">The number of bytes to read</param>
-        /// <returns></returns>
         public async Task<byte[]> ReadBytesAsync(long count)
         {
             if (count < 0 || count > Int32.MaxValue)
@@ -315,11 +224,6 @@ namespace Kaitai.Async
             return bytes;
         }
 
-        /// <summary>
-        /// Read a fixed number of bytes from the stream
-        /// </summary>
-        /// <param name="count">The number of bytes to read</param>
-        /// <returns></returns>
         public async Task<byte[]> ReadBytesAsync(ulong count)
         {
             if (count > Int32.MaxValue)

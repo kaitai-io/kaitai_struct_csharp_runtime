@@ -11,10 +11,7 @@
 
         public KaitaiStream M_Io
         {
-            get
-            {
-                return m_io;
-            }
+            get => m_io;
         }
     }
 }

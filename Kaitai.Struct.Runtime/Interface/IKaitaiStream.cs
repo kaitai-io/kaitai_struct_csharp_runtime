@@ -117,6 +117,7 @@
         double ReadF8le();
 
         ulong ReadBitsInt(int n);
+
         ulong ReadBitsIntLe(int n);
 
         /// <summary>

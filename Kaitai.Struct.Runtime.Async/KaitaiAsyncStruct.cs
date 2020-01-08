@@ -9,7 +9,6 @@
       m_io = kaitaiStream;
     }
 
-    // ReSharper disable once InconsistentNaming
     public KaitaiAsyncStream M_Io => m_io;
   }
 }

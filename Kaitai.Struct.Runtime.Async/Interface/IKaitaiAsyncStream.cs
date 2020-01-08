@@ -119,6 +119,7 @@ namespace Kaitai.Async
         Task<double> ReadF8leAsync();
 
         Task<ulong> ReadBitsIntAsync(int n);
+
         Task<ulong> ReadBitsIntLeAsync(int n);
 
         /// <summary>
