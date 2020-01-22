@@ -11,6 +11,7 @@
 
   <ItemGroup>
     <PackageReference Include="Overby.Extensions.AsyncBinaryReaderWriter" Version="1.0.39" />
+    <PackageReference Include="System.IO.Pipelines" Version="4.7.0" />
   </ItemGroup>
 
 </Project>
