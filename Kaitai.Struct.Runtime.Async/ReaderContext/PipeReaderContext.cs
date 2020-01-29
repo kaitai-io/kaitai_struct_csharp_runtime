@@ -29,8 +29,9 @@ namespace Kaitai.Async
 
     public async ValueTask<bool> IsEof()
     {
-      if (_readResult.Equals(default(ReadResult)) ||
-          Position >= _readResult.Buffer.Length && !_readResult.IsCompleted)
+      await EnsureReadResultIsNotDefault();
+
+      if (Position >= _readResult.Buffer.Length && !_readResult.IsCompleted)
       {
         _pipeReader.AdvanceTo(_readResult.Buffer.Start, _readResult.Buffer.GetPosition(Position));
         _readResult = await _pipeReader.ReadAsync();
@@ -48,6 +49,8 @@ namespace Kaitai.Async
       }
       else
       {
+        await EnsureReadResultIsNotDefault();
+
         while (_readResult.Buffer.Length < position && !_readResult.IsCompleted)
         {
           _pipeReader.AdvanceTo(_readResult.Buffer.Start, _readResult.Buffer.End);
@@ -70,6 +73,8 @@ namespace Kaitai.Async
 
     public async ValueTask<byte> ReadByteAsync()
     {
+      await EnsureReadResultIsNotDefault();
+
       var value = byte.MinValue;
       while (!TryReadByte(out value) && !_readResult.IsCompleted)
       {
@@ -95,6 +100,8 @@ namespace Kaitai.Async
         throw new ArgumentOutOfRangeException(
           $"requested {count} bytes, while only non-negative int32 amount of bytes possible");
       }
+
+      await EnsureReadResultIsNotDefault();
 
       byte[] value = null;
 
@@ -136,11 +143,21 @@ namespace Kaitai.Async
       return value;
     }
 
-    private async Task FillReadResultBufferToTheEnd()
+    private async ValueTask FillReadResultBufferToTheEnd()
     {
+      await EnsureReadResultIsNotDefault();
+
       while (!_readResult.IsCompleted)
       {
         _pipeReader.AdvanceTo(_readResult.Buffer.Start, _readResult.Buffer.End);
+        _readResult = await _pipeReader.ReadAsync();
+      }
+    }
+
+    private async ValueTask EnsureReadResultIsNotDefault()
+    {
+      if (_readResult.Equals(default(ReadResult)))
+      {
         _readResult = await _pipeReader.ReadAsync();
       }
     }
