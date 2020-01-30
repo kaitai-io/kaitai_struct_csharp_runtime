@@ -51,13 +51,17 @@ namespace Kaitai.Async
     #region Stream positioning
 
     public override bool IsEof =>
-      _readerContext.IsEof().GetAwaiter().GetResult() && _bitsLeft == 0; //TODO should be async method
+      _readerContext.IsEofAsync().GetAwaiter().GetResult() && _bitsLeft == 0;
+
+    public ValueTask<bool> IsEofAsync() => _readerContext.IsEofAsync();
+
+    public ValueTask<long> GetSizeAsync() => _readerContext.GetSizeAsync();
 
     public virtual async Task SeekAsync(long position) => await _readerContext.SeekAsync(position);
 
     public override long Pos => _readerContext.Position;
 
-    public override long Size => ReadBytesFullAsync().GetAwaiter().GetResult().Length; //TODO should be async method
+    public override long Size => _readerContext.GetSizeAsync().GetAwaiter().GetResult();
 
     #endregion
 

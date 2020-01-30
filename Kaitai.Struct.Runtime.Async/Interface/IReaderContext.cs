@@ -5,8 +5,8 @@ namespace Kaitai.Async
   public interface IReaderContext
   {
     long Position { get; }
-    ValueTask<long> GetSize();
-    ValueTask<bool> IsEof();
+    ValueTask<long> GetSizeAsync();
+    ValueTask<bool> IsEofAsync();
     ValueTask SeekAsync(long position);
     ValueTask<byte> ReadByteAsync();
     ValueTask<byte[]> ReadBytesAsync(long count);
