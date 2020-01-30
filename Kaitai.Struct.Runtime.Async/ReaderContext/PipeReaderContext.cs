@@ -20,14 +20,14 @@ namespace Kaitai.Async
 
     public long Position { get; private set; }
 
-    public async ValueTask<long> GetSize()
+    public async ValueTask<long> GetSizeAsync()
     {
       await FillReadResultBufferToTheEnd();
 
       return _readResult.Buffer.Length;
     }
 
-    public async ValueTask<bool> IsEof()
+    public async ValueTask<bool> IsEofAsync()
     {
       await EnsureReadResultIsNotDefault();
 

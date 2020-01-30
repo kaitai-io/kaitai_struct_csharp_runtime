@@ -17,9 +17,9 @@ namespace Kaitai.Async
 
     protected AsyncBinaryReader AsyncBinaryReader { get; }
     public long Position => _baseStream.Position;
-    public ValueTask<long> GetSize() => new ValueTask<long>(_baseStream.Length);
+    public ValueTask<long> GetSizeAsync() => new ValueTask<long>(_baseStream.Length);
 
-    public ValueTask<bool> IsEof() =>
+    public ValueTask<bool> IsEofAsync() =>
       new ValueTask<bool>(_baseStream.Position >= _baseStream.Length);
 
     public ValueTask SeekAsync(long position)

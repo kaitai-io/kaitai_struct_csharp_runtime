@@ -1,4 +1,5 @@
 ﻿using System.IO;
+using System.IO.Pipelines;
 using System.Threading.Tasks;
 using Kaitai.Async;
 using Xunit;
@@ -6,14 +7,14 @@ using Xunit;
 namespace Kaitai.Struct.Runtime.Async.Tests
 {
   public class StreamKaitaiAsyncStreamBaseTests : KaitaiAsyncStreamBaseTests
-    {
+  {
     protected override KaitaiAsyncStream Create(byte[] data) => new KaitaiAsyncStream(data);
   }
 
   public class PipeReaderKaitaiAsyncStreamBaseTests : KaitaiAsyncStreamBaseTests
-    {
+  {
     protected override KaitaiAsyncStream Create(byte[] data) =>
-      new KaitaiAsyncStream(System.IO.Pipelines.PipeReader.Create(new MemoryStream(data)));
+      new KaitaiAsyncStream(PipeReader.Create(new MemoryStream(data)));
   }
 
   public abstract class KaitaiAsyncStreamBaseTests
@@ -34,8 +35,8 @@ namespace Kaitai.Struct.Runtime.Async.Tests
     public async Task Eof_Test(bool shouldBeEof, int streamSize, int readBitsAmount)
     {
       var kaitaiStreamSUT = Create(new byte[streamSize]);
-
       await kaitaiStreamSUT.ReadBitsIntAsync(readBitsAmount);
+      long positionBeforeIsEof = kaitaiStreamSUT.Pos;
 
       if (shouldBeEof)
       {
@@ -45,6 +46,8 @@ namespace Kaitai.Struct.Runtime.Async.Tests
       {
         Assert.False(kaitaiStreamSUT.IsEof);
       }
+
+      Assert.Equal(positionBeforeIsEof, kaitaiStreamSUT.Pos);
     }
 
     [Theory]
@@ -74,11 +77,18 @@ namespace Kaitai.Struct.Runtime.Async.Tests
     [Theory]
     [InlineData(0)]
     [InlineData(1)]
+    [InlineData(100)]
+    [InlineData(1_000)]
+    [InlineData(10_000)]
+    [InlineData(100_000)]
+    [InlineData(1_000_000)]
     public void Size_Test(int streamSize)
     {
       var kaitaiStreamSUT = Create(new byte[streamSize]);
+      long positionBeforeIsEof = kaitaiStreamSUT.Pos;
 
       Assert.Equal(streamSize, kaitaiStreamSUT.Size);
+      Assert.Equal(positionBeforeIsEof, kaitaiStreamSUT.Pos);
     }
 
     [Fact]
