@@ -1,0 +1,37 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFrameworks>netstandard1.3;net45</TargetFrameworks>
+        <GenerateDocumentationFile>true</GenerateDocumentationFile>
+        <NoWarn>1701;1702;CS1591</NoWarn>
+        <ProjectGuid>{8339A750-C407-4CE8-8E31-51CB2EFD3A4B}</ProjectGuid>
+    </PropertyGroup>
+
+    <PropertyGroup>
+        <PackageId>KaitaiStruct.Runtime.CSharp</PackageId>
+        <Authors />
+        <Company>Kaitai Project</Company>
+        <Description>This library implements Kaitai Struct API for C#.</Description>
+        <Product>Kaitai Struct Runtime</Product>
+        <Copyright>Copyright © Kaitai Project 2016-2019</Copyright>
+        <AssemblyName>Kaitai.Struct.Runtime</AssemblyName>
+        <RootNamespace>Kaitai</RootNamespace>
+        <PackageProjectUrl>http://kaitai.io/</PackageProjectUrl>
+        <RepositoryUrl>https://github.com/kaitai-io/kaitai_struct_csharp_runtime</RepositoryUrl>
+        <PackageTags>Kaitai Struct File-Format Binary Protocols</PackageTags>
+        <PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
+        <PackageIcon>icon.png</PackageIcon>
+
+        <AssemblyVersion>0.8.0.0</AssemblyVersion>
+        <FileVersion>0.8.0.0</FileVersion>
+        <Version>0.8.0.0</Version>
+
+        <PackageReleaseNotes></PackageReleaseNotes>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <None Include="LICENSE.txt" Pack="true" PackagePath="" />
+        <None Include="icon.png" Pack="true" PackagePath="" />
+    </ItemGroup>
+
+</Project>
