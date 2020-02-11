@@ -53,7 +53,7 @@ namespace Kaitai.Async
     public override bool IsEof =>
       _readerContext.IsEofAsync().GetAwaiter().GetResult() && _bitsLeft == 0;
 
-    public ValueTask<bool> IsEofAsync() => _readerContext.IsEofAsync();
+    public async ValueTask<bool> IsEofAsync() => await _readerContext.IsEofAsync() && _bitsLeft == 0;
 
     public ValueTask<long> GetSizeAsync() => _readerContext.GetSizeAsync();
 
