@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
+using System.Globalization;
 
 namespace Kaitai
 {
@@ -676,6 +677,22 @@ namespace Kaitai
             } else {
                 return al - bl;
             }
+        }
+
+        /// <summary>
+        /// Reverses the string, Unicode-aware.
+        /// </summary>
+        /// <a href="https://stackoverflow.com/a/15029493">taken from here</a>
+        public static string StringReverse(string s)
+        {
+            TextElementEnumerator enumerator = StringInfo.GetTextElementEnumerator(s);
+
+            List<string> elements = new List<string>();
+            while (enumerator.MoveNext())
+                elements.Add(enumerator.GetTextElement());
+
+            elements.Reverse();
+            return string.Concat(elements);
         }
 
         #endregion
