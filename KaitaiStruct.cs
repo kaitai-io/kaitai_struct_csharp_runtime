@@ -101,4 +101,38 @@ namespace Kaitai
         protected Object expected;
         protected Object actual;
     }
+
+    public class ValidationLessThanError : ValidationFailedError {
+        public ValidationLessThanError(long min, long actual, KaitaiStream io, string srcPath)
+            : base("not in range, min " + min + ", but got " + actual, io, srcPath)
+        {
+            this.min = min;
+            this.actual = actual;
+        }
+
+        protected long min;
+        protected long actual;
+    }
+
+    public class ValidationGreaterThanError : ValidationFailedError {
+        public ValidationGreaterThanError(long max, long actual, KaitaiStream io, string srcPath)
+            : base("not in range, max " + max + ", but got " + actual, io, srcPath)
+        {
+            this.max = max;
+            this.actual = actual;
+        }
+
+        protected long max;
+        protected long actual;
+    }
+
+    public class ValidationNotAnyOfError : ValidationFailedError {
+        public ValidationNotAnyOfError(Object actual, KaitaiStream io, string srcPath)
+            : base("not any of the list, got " + actual, io, srcPath)
+        {
+            this.actual = actual;
+        }
+
+        protected Object actual;
+    }
 }
