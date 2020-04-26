@@ -320,7 +320,7 @@ namespace Kaitai
             return res;
         }
 
-        [Obsolete("This method is deprecated. Use ReadBitsIntBe instead.")]
+        [Obsolete("use ReadBitsIntBe instead")]
         public ulong ReadBitsInt(int n)
         {
             return ReadBitsIntBe(n);
