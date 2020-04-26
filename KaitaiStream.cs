@@ -287,7 +287,7 @@ namespace Kaitai
             BitsLeft = 0;
         }
 
-        public ulong ReadBitsInt(int n)
+        public ulong ReadBitsIntBe(int n)
         {
             int bitsNeeded = n - BitsLeft;
             if (bitsNeeded > 0)
@@ -318,6 +318,12 @@ namespace Kaitai
             Bits &= mask;
 
             return res;
+        }
+
+        [Obsolete("This method is deprecated. Use ReadBitsIntBe instead.")]
+        public ulong ReadBitsInt(int n)
+        {
+            return ReadBitsIntBe(n);
         }
 
         //Method ported from algorithm specified @ issue#155
