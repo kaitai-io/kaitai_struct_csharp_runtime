@@ -3,11 +3,12 @@ using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
+using System.Globalization;
 
 namespace Kaitai
 {
     /// <summary>
-    /// The base Kaitai steam which exposes an API for the Kaitai Struct framework.
+    /// The base Kaitai stream which exposes an API for the Kaitai Struct framework.
     /// It's based off a <code>BinaryReader</code>, which is a little-endian reader.
     /// </summary>
     public partial class KaitaiStream : BinaryReader
@@ -16,7 +17,6 @@ namespace Kaitai
 
         public KaitaiStream(Stream stream) : base(stream)
         {
-
         }
 
         ///<summary>
@@ -24,7 +24,6 @@ namespace Kaitai
         ///</summary>
         public KaitaiStream(string file) : base(File.Open(file, FileMode.Open, FileAccess.Read, FileShare.Read))
         {
-
         }
 
         ///<summary>
@@ -32,11 +31,12 @@ namespace Kaitai
         ///</summary>
         public KaitaiStream(byte[] bytes) : base(new MemoryStream(bytes))
         {
-
         }
 
         private ulong Bits = 0;
         private int BitsLeft = 0;
+
+        static readonly bool IsLittleEndian = BitConverter.IsLittleEndian;
 
         #endregion
 
@@ -47,7 +47,7 @@ namespace Kaitai
         /// </summary>
         public bool IsEof
         {
-            get { return BaseStream.Position >= BaseStream.Length; }
+            get { return BaseStream.Position >= BaseStream.Length && BitsLeft == 0; }
         }
 
         /// <summary>
@@ -68,7 +68,7 @@ namespace Kaitai
         }
 
         /// <summary>
-        /// Get the total length of the stream
+        /// Get the total length of the stream (ie. file size)
         /// </summary>
         public long Size
         {
@@ -287,7 +287,7 @@ namespace Kaitai
             BitsLeft = 0;
         }
 
-        public ulong ReadBitsInt(int n)
+        public ulong ReadBitsIntBe(int n)
         {
             int bitsNeeded = n - BitsLeft;
             if (bitsNeeded > 0)
@@ -307,11 +307,9 @@ namespace Kaitai
 
             // raw mask with required number of 1s, starting from lowest bit
             ulong mask = GetMaskOnes(n);
-            // shift mask to align with highest bits available in "bits"
+            // shift "bits" to align the highest bits with the mask & derive reading result
             int shiftBits = BitsLeft - n;
-            mask = mask << shiftBits;
-            // derive reading result
-            ulong res = (Bits & mask) >> shiftBits;
+            ulong res = (Bits >> shiftBits) & mask;
             // clear top bits that we've just read => AND with 1s
             BitsLeft -= n;
             mask = GetMaskOnes(BitsLeft);
@@ -320,16 +318,48 @@ namespace Kaitai
             return res;
         }
 
+        [Obsolete("use ReadBitsIntBe instead")]
+        public ulong ReadBitsInt(int n)
+        {
+            return ReadBitsIntBe(n);
+        }
+
+        //Method ported from algorithm specified @ issue#155
+        public ulong ReadBitsIntLe(int n)
+        {
+            int bitsNeeded = n - BitsLeft;
+
+            if (bitsNeeded > 0)
+            {
+                // 1 bit  => 1 byte
+                // 8 bits => 1 byte
+                // 9 bits => 2 bytes
+                int bytesNeeded = ((bitsNeeded - 1) / 8) + 1;
+                byte[] buf = ReadBytes(bytesNeeded);
+                for (int i = 0; i < buf.Length; i++)
+                {
+                    ulong v = (ulong)((ulong)buf[i] << BitsLeft);
+                    Bits |= v;
+                    BitsLeft += 8;
+                }
+            }
+
+            // raw mask with required number of 1s, starting from lowest bit
+            ulong mask = GetMaskOnes(n);
+
+            // derive reading result
+            ulong res = (Bits & mask);
+
+            // remove bottom bits that we've just read by shifting
+            Bits >>= n;
+            BitsLeft -= n;
+
+            return res;
+        }
+
         private static ulong GetMaskOnes(int n)
         {
-            if (n == 64)
-            {
-                return 0xffffffffffffffffUL;
-            }
-            else
-            {
-                return (1UL << n) - 1;
-            }
+            return n == 64 ? 0xffffffffffffffffUL : (1UL << n) - 1;
         }
 
         #endregion
@@ -360,9 +390,8 @@ namespace Kaitai
         {
             if (count > Int32.MaxValue)
                 throw new ArgumentOutOfRangeException("requested " + count + " bytes, while only non-negative int32 amount of bytes possible");
-            int cnt = (int)count;
-            byte[] bytes = base.ReadBytes(cnt);
-            if (bytes.Length < cnt)
+            byte[] bytes = base.ReadBytes((int)count);
+            if (bytes.Length < (int)count)
                 throw new EndOfStreamException("requested " + count + " bytes, but got only " + bytes.Length + " bytes");
             return bytes;
         }
@@ -375,7 +404,7 @@ namespace Kaitai
         protected byte[] ReadBytesNormalisedLittleEndian(int count)
         {
             byte[] bytes = ReadBytes(count);
-            if (!BitConverter.IsLittleEndian) Array.Reverse(bytes);
+            if (!IsLittleEndian) Array.Reverse(bytes);
             return bytes;
         }
 
@@ -387,7 +416,7 @@ namespace Kaitai
         protected byte[] ReadBytesNormalisedBigEndian(int count)
         {
             byte[] bytes = ReadBytes(count);
-            if (BitConverter.IsLittleEndian) Array.Reverse(bytes);
+            if (IsLittleEndian) Array.Reverse(bytes);
             return bytes;
         }
 
@@ -410,7 +439,7 @@ namespace Kaitai
         /// <returns></returns>
         public byte[] ReadBytesTerm(byte terminator, bool includeTerminator, bool consumeTerminator, bool eosError)
         {
-            List<byte> bytes = new System.Collections.Generic.List<byte>();
+            List<byte> bytes = new List<byte>();
             while (true)
             {
                 if (IsEof)
@@ -439,26 +468,19 @@ namespace Kaitai
         public byte[] EnsureFixedContents(byte[] expected)
         {
             byte[] bytes = ReadBytes(expected.Length);
-            bool error = false;
-            if (bytes.Length == expected.Length)
+
+            if (bytes.Length != expected.Length)
             {
-                for (int i = 0; i < bytes.Length; i++)
+                throw new Exception(string.Format("Expected bytes: {0} ({1} bytes), Instead got: {2} ({3} bytes)", Convert.ToBase64String(expected), expected.Length, Convert.ToBase64String(bytes), bytes.Length));
+            }
+            for (int i = 0; i < bytes.Length; i++)
+            {
+                if (bytes[i] != expected[i])
                 {
-                    if (bytes[i] != expected[i])
-                    {
-                        error = true;
-                        break;
-                    }
+                    throw new Exception(string.Format("Expected bytes: {0} ({1} bytes), Instead got: {2} ({3} bytes)", Convert.ToBase64String(expected), expected.Length, Convert.ToBase64String(bytes), bytes.Length));
                 }
             }
-            else
-            {
-                error = true;
-            }
-            if (error)
-            {
-                throw new Exception(string.Format("Expected bytes: {0}, Instead got: {1}", Convert.ToBase64String(expected), Convert.ToBase64String(bytes)));
-            }
+
             return bytes;
         }
 
@@ -644,8 +666,8 @@ namespace Kaitai
         {
             if (a == b)
                 return 0;
-            int al = a.Count();
-            int bl = b.Count();
+            int al = a.Length;
+            int bl = b.Length;
             int minLen = al < bl ? al : bl;
             for (int i = 0; i < minLen; i++) {
                 int cmp = a[i] - b[i];
@@ -659,6 +681,22 @@ namespace Kaitai
             } else {
                 return al - bl;
             }
+        }
+
+        /// <summary>
+        /// Reverses the string, Unicode-aware.
+        /// </summary>
+        /// <a href="https://stackoverflow.com/a/15029493">taken from here</a>
+        public static string StringReverse(string s)
+        {
+            TextElementEnumerator enumerator = StringInfo.GetTextElementEnumerator(s);
+
+            List<string> elements = new List<string>();
+            while (enumerator.MoveNext())
+                elements.Add(enumerator.GetTextElement());
+
+            elements.Reverse();
+            return string.Concat(elements);
         }
 
         #endregion
