@@ -58,6 +58,7 @@ namespace Kaitai.Async
     public ValueTask<long> GetSizeAsync() => _readerContext.GetSizeAsync();
 
     public virtual async Task SeekAsync(long position) => await _readerContext.SeekAsync(position);
+    public virtual async Task SeekAsync(ulong position) => await SeekAsync((long)position);
 
     public override long Pos => _readerContext.Position;
 
