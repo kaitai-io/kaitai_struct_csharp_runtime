@@ -49,6 +49,7 @@ namespace Kaitai
         public override bool IsEof => BaseStream.Position >= BaseStream.Length && BitsLeft == 0;
 
         public void Seek(long position) => BaseStream.Seek(position, SeekOrigin.Begin);
+        public void Seek(ulong position) => Seek((long)position);
 
         public override long Pos => BaseStream.Position;
 
