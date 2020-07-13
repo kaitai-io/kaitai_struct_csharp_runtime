@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -7,7 +7,7 @@ namespace Kaitai
     public struct ImplicitNullable<T> where T : struct
     {
         public bool HasValue { get { return this._value.HasValue; } }
-        public T Value { get { return this._value.Value; } }
+        public T Value { get { return this._value ?? default; } }
 
         public ImplicitNullable(T value) : this() { this._value = value; }
         public ImplicitNullable(T? value) : this() { this._value = value; }
