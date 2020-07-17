@@ -6,42 +6,42 @@ using System.Threading.Tasks;
 
 namespace Kaitai.Async
 {
-  internal class PipeReaderContext : IReaderContext
+  public class PipeReaderContext : IReaderContext
   {
-    private readonly PipeReader _pipeReader;
-    private ReadResult _readResult;
+    protected readonly PipeReader PipeReader;
+    protected ReadResult ReadResult;
 
     public PipeReaderContext(PipeReader pipeReader)
     {
-      _pipeReader = pipeReader;
+      PipeReader = pipeReader;
     }
 
-    private long RemainingBytesInReadResult => _readResult.Buffer.Length - Position;
+    protected long RemainingBytesInReadResult => ReadResult.Buffer.Length - Position;
 
-    public long Position { get; private set; }
+    public long Position { get; protected set; }
 
-    public async ValueTask<long> GetSizeAsync()
+    public virtual async ValueTask<long> GetSizeAsync()
     {
       await FillReadResultBufferToTheEnd();
 
-      return _readResult.Buffer.Length;
+      return ReadResult.Buffer.Length;
     }
 
-    public async ValueTask<bool> IsEofAsync()
+    public virtual async ValueTask<bool> IsEofAsync()
     {
       await EnsureReadResultIsNotDefault();
 
-      if (Position >= _readResult.Buffer.Length && !_readResult.IsCompleted)
+      if (Position >= ReadResult.Buffer.Length && !ReadResult.IsCompleted)
       {
-        _pipeReader.AdvanceTo(_readResult.Buffer.Start, _readResult.Buffer.GetPosition(Position));
-        _readResult = await _pipeReader.ReadAsync();
+        PipeReader.AdvanceTo(ReadResult.Buffer.Start, ReadResult.Buffer.GetPosition(Position));
+        ReadResult = await PipeReader.ReadAsync();
       }
 
-      return Position >= _readResult.Buffer.Length && _readResult.IsCompleted;
+      return Position >= ReadResult.Buffer.Length && ReadResult.IsCompleted;
     }
 
 
-    public async ValueTask SeekAsync(long position)
+    public virtual async ValueTask SeekAsync(long position)
     {
       if (position <= Position)
       {
@@ -51,19 +51,19 @@ namespace Kaitai.Async
       {
         await EnsureReadResultIsNotDefault();
 
-        while (_readResult.Buffer.Length < position && !_readResult.IsCompleted)
+        while (ReadResult.Buffer.Length < position && !ReadResult.IsCompleted)
         {
-          _pipeReader.AdvanceTo(_readResult.Buffer.Start, _readResult.Buffer.End);
-          _readResult = await _pipeReader.ReadAsync();
+          PipeReader.AdvanceTo(ReadResult.Buffer.Start, ReadResult.Buffer.End);
+          ReadResult = await PipeReader.ReadAsync();
         }
 
-        if (_readResult.Buffer.Length <= position)
+        if (ReadResult.Buffer.Length <= position)
         {
           Position = position;
           return;
         }
 
-        if (_readResult.IsCompleted)
+        if (ReadResult.IsCompleted)
         {
           throw new EndOfStreamException(
             $"requested {position} bytes, but got only {RemainingBytesInReadResult} bytes");
@@ -71,15 +71,15 @@ namespace Kaitai.Async
       }
     }
 
-    public async ValueTask<byte> ReadByteAsync()
+    public virtual async ValueTask<byte> ReadByteAsync()
     {
       await EnsureReadResultIsNotDefault();
 
       var value = byte.MinValue;
-      while (!TryReadByte(out value) && !_readResult.IsCompleted)
+      while (!TryReadByte(out value) && !ReadResult.IsCompleted)
       {
-        _pipeReader.AdvanceTo(_readResult.Buffer.Start, _readResult.Buffer.GetPosition(Position));
-        _readResult = await _pipeReader.ReadAsync();
+        PipeReader.AdvanceTo(ReadResult.Buffer.Start, ReadResult.Buffer.GetPosition(Position));
+        ReadResult = await PipeReader.ReadAsync();
       }
 
       Position += 1;
@@ -87,13 +87,13 @@ namespace Kaitai.Async
 
       bool TryReadByte(out byte readValue)
       {
-        var sequenceReader = new SequenceReader<byte>(_readResult.Buffer);
+        var sequenceReader = new SequenceReader<byte>(ReadResult.Buffer);
         sequenceReader.Advance(Position);
         return sequenceReader.TryRead(out readValue);
       }
     }
 
-    public async ValueTask<byte[]> ReadBytesAsync(long count)
+    public virtual async ValueTask<byte[]> ReadBytesAsync(long count)
     {
       if (count < 0 || count > int.MaxValue)
       {
@@ -107,14 +107,14 @@ namespace Kaitai.Async
 
       while (!TryRead(out value, count))
       {
-        if (_readResult.IsCompleted)
+        if (ReadResult.IsCompleted)
         {
           throw new EndOfStreamException(
             $"requested {count} bytes, but got only {RemainingBytesInReadResult} bytes");
         }
 
-        _pipeReader.AdvanceTo(_readResult.Buffer.Start, _readResult.Buffer.GetPosition(Position));
-        _readResult = await _pipeReader.ReadAsync();
+        PipeReader.AdvanceTo(ReadResult.Buffer.Start, ReadResult.Buffer.GetPosition(Position));
+        ReadResult = await PipeReader.ReadAsync();
       }
 
       Position += count;
@@ -128,7 +128,7 @@ namespace Kaitai.Async
           return false;
         }
 
-        readBytes = _readResult.Buffer.Slice(Position, readBytesCount).ToArray();
+        readBytes = ReadResult.Buffer.Slice(Position, readBytesCount).ToArray();
         return true;
       }
     }
@@ -137,8 +137,8 @@ namespace Kaitai.Async
     {
       await FillReadResultBufferToTheEnd();
 
-      _pipeReader.AdvanceTo(_readResult.Buffer.Start, _readResult.Buffer.End);
-      var value = _readResult.Buffer.Slice(Position, _readResult.Buffer.End).ToArray();
+      PipeReader.AdvanceTo(ReadResult.Buffer.Start, ReadResult.Buffer.End);
+      var value = ReadResult.Buffer.Slice(Position, ReadResult.Buffer.End).ToArray();
       Position += value.Length;
       return value;
     }
@@ -147,18 +147,18 @@ namespace Kaitai.Async
     {
       await EnsureReadResultIsNotDefault();
 
-      while (!_readResult.IsCompleted)
+      while (!ReadResult.IsCompleted)
       {
-        _pipeReader.AdvanceTo(_readResult.Buffer.Start, _readResult.Buffer.End);
-        _readResult = await _pipeReader.ReadAsync();
+        PipeReader.AdvanceTo(ReadResult.Buffer.Start, ReadResult.Buffer.End);
+        ReadResult = await PipeReader.ReadAsync();
       }
     }
 
     private async ValueTask EnsureReadResultIsNotDefault()
     {
-      if (_readResult.Equals(default(ReadResult)))
+      if (ReadResult.Equals(default(ReadResult)))
       {
-        _readResult = await _pipeReader.ReadAsync();
+        ReadResult = await PipeReader.ReadAsync();
       }
     }
   }

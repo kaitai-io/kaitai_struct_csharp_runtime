@@ -8,7 +8,7 @@ namespace Kaitai.Async
 {
   public class KaitaiAsyncStream : KaitaiStreamBase, IKaitaiAsyncStream
   {
-    private readonly IReaderContext _readerContext;
+    protected readonly IReaderContext ReaderContext;
     private ulong _bits;
     private int _bitsLeft;
 
@@ -16,17 +16,17 @@ namespace Kaitai.Async
 
     public KaitaiAsyncStream(IReaderContext readerContext)
     {
-      _readerContext = readerContext;
+      ReaderContext = readerContext;
     }
 
     public KaitaiAsyncStream(PipeReader pipeReader)
     {
-      _readerContext = new PipeReaderContext(pipeReader);
+      ReaderContext = new PipeReaderContext(pipeReader);
     }
 
     public KaitaiAsyncStream(Stream stream)
     {
-      _readerContext = new StreamReaderContext(stream);
+      ReaderContext = new StreamReaderContext(stream);
     }
 
     /// <summary>
@@ -51,18 +51,18 @@ namespace Kaitai.Async
     #region Stream positioning
 
     public override bool IsEof =>
-      _readerContext.IsEofAsync().GetAwaiter().GetResult() && _bitsLeft == 0;
+      ReaderContext.IsEofAsync().GetAwaiter().GetResult() && _bitsLeft == 0;
 
-    public async ValueTask<bool> IsEofAsync() => await _readerContext.IsEofAsync() && _bitsLeft == 0;
+    public async ValueTask<bool> IsEofAsync() => await ReaderContext.IsEofAsync() && _bitsLeft == 0;
 
-    public ValueTask<long> GetSizeAsync() => _readerContext.GetSizeAsync();
+    public ValueTask<long> GetSizeAsync() => ReaderContext.GetSizeAsync();
 
-    public virtual async Task SeekAsync(long position) => await _readerContext.SeekAsync(position);
+    public virtual async Task SeekAsync(long position) => await ReaderContext.SeekAsync(position);
     public virtual async Task SeekAsync(ulong position) => await SeekAsync((long)position);
 
-    public override long Pos => _readerContext.Position;
+    public override long Pos => ReaderContext.Position;
 
-    public override long Size => _readerContext.GetSizeAsync().GetAwaiter().GetResult();
+    public override long Size => ReaderContext.GetSizeAsync().GetAwaiter().GetResult();
 
     #endregion
 
@@ -96,7 +96,7 @@ namespace Kaitai.Async
 
     #region Unsigned
 
-    public async Task<byte> ReadU1Async() => await _readerContext.ReadByteAsync();
+    public async Task<byte> ReadU1Async() => await ReaderContext.ReadByteAsync();
 
     #region Big-endian
 
@@ -222,7 +222,7 @@ namespace Kaitai.Async
 
     #region Byte arrays
 
-    public async Task<byte[]> ReadBytesAsync(long count) => await _readerContext.ReadBytesAsync(count);
+    public async Task<byte[]> ReadBytesAsync(long count) => await ReaderContext.ReadBytesAsync(count);
 
     public async Task<byte[]> ReadBytesAsync(ulong count)
     {
@@ -271,7 +271,7 @@ namespace Kaitai.Async
     /// Read all the remaining bytes from the stream until the end is reached
     /// </summary>
     /// <returns></returns>
-    public virtual async Task<byte[]> ReadBytesFullAsync() => await _readerContext.ReadBytesFullAsync();
+    public virtual async Task<byte[]> ReadBytesFullAsync() => await ReaderContext.ReadBytesFullAsync();
 
     /// <summary>
     /// Read a terminated string from the stream
