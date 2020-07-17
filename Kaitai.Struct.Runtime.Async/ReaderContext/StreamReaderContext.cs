@@ -5,9 +5,10 @@ using Overby.Extensions.AsyncBinaryReaderWriter;
 
 namespace Kaitai.Async
 {
-  internal class StreamReaderContext : IReaderContext
+  public class StreamReaderContext : IReaderContext
   {
     private readonly Stream _baseStream;
+    protected readonly AsyncBinaryReader AsyncBinaryReader;
 
     public StreamReaderContext(Stream stream)
     {
@@ -15,22 +16,21 @@ namespace Kaitai.Async
       AsyncBinaryReader = new AsyncBinaryReader(_baseStream);
     }
 
-    protected AsyncBinaryReader AsyncBinaryReader { get; }
     public long Position => _baseStream.Position;
-    public ValueTask<long> GetSizeAsync() => new ValueTask<long>(_baseStream.Length);
+    public virtual ValueTask<long> GetSizeAsync() => new ValueTask<long>(_baseStream.Length);
 
-    public ValueTask<bool> IsEofAsync() =>
+    public virtual ValueTask<bool> IsEofAsync() =>
       new ValueTask<bool>(_baseStream.Position >= _baseStream.Length);
 
-    public ValueTask SeekAsync(long position)
+    public virtual ValueTask SeekAsync(long position)
     {
       _baseStream.Seek(position, SeekOrigin.Begin);
       return new ValueTask();
     }
 
-    public async ValueTask<byte> ReadByteAsync() => (byte) await AsyncBinaryReader.ReadSByteAsync();
+    public virtual async ValueTask<byte> ReadByteAsync() => (byte) await AsyncBinaryReader.ReadSByteAsync();
 
-    public async ValueTask<byte[]> ReadBytesAsync(long count)
+    public virtual async ValueTask<byte[]> ReadBytesAsync(long count)
     {
       if (count < 0 || count > int.MaxValue)
       {
@@ -47,7 +47,7 @@ namespace Kaitai.Async
       return bytes;
     }
 
-    public async ValueTask<byte[]> ReadBytesFullAsync() =>
+    public virtual async ValueTask<byte[]> ReadBytesFullAsync() =>
       await ReadBytesAsync(_baseStream.Length - _baseStream.Position);
   }
 }
