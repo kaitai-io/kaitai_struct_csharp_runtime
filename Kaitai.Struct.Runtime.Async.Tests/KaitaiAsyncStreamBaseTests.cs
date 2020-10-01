@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.IO.Pipelines;
 using System.Threading.Tasks;
 using Kaitai.Async;
@@ -8,17 +9,48 @@ namespace Kaitai.Struct.Runtime.Async.Tests
 {
   public class StreamKaitaiAsyncStreamBaseTests : KaitaiAsyncStreamBaseTests
   {
+    public StreamKaitaiAsyncStreamBaseTests() : base(false)
+    {
+    }
+
     protected override KaitaiAsyncStream Create(byte[] data) => new KaitaiAsyncStream(data);
   }
 
   public class PipeReaderKaitaiAsyncStreamBaseTests : KaitaiAsyncStreamBaseTests
   {
+    public PipeReaderKaitaiAsyncStreamBaseTests() : base(false)
+    {
+    }
+
     protected override KaitaiAsyncStream Create(byte[] data) =>
       new KaitaiAsyncStream(PipeReader.Create(new MemoryStream(data)));
   }
 
-  public abstract class KaitaiAsyncStreamBaseTests
+  public class StreamKaitaiAsyncStreamBaseCancelledTests : KaitaiAsyncStreamBaseTests
   {
+    public StreamKaitaiAsyncStreamBaseCancelledTests() : base(true)
+    {
+    }
+
+    protected override KaitaiAsyncStream Create(byte[] data) => new KaitaiAsyncStream(data);
+  }
+
+  public class PipeReaderKaitaiAsyncStreamBaseCancelledTests : KaitaiAsyncStreamBaseTests
+  {
+    public PipeReaderKaitaiAsyncStreamBaseCancelledTests() : base(true)
+    {
+    }
+
+    protected override KaitaiAsyncStream Create(byte[] data) =>
+      new KaitaiAsyncStream(PipeReader.Create(new MemoryStream(data)));
+  }
+
+  public abstract class KaitaiAsyncStreamBaseTests : CancelableTestsBase
+  {
+    protected KaitaiAsyncStreamBaseTests(bool isTestingCancellation) : base(isTestingCancellation)
+    {
+    }
+
     protected abstract KaitaiAsyncStream Create(byte[] data);
 
     [Theory]
@@ -35,19 +67,22 @@ namespace Kaitai.Struct.Runtime.Async.Tests
     public async Task Eof_Test(bool shouldBeEof, int streamSize, int readBitsAmount)
     {
       var kaitaiStreamSUT = Create(new byte[streamSize]);
-      await kaitaiStreamSUT.ReadBitsIntAsync(readBitsAmount);
-      long positionBeforeIsEof = kaitaiStreamSUT.Pos;
-
-      if (shouldBeEof)
+      await EvaluateMaybeCancelled(async () =>
       {
-        Assert.True(kaitaiStreamSUT.IsEof);
-      }
-      else
-      {
-        Assert.False(kaitaiStreamSUT.IsEof);
-      }
+        await kaitaiStreamSUT.ReadBitsIntAsync(readBitsAmount);
+        long positionBeforeIsEof = kaitaiStreamSUT.Pos;
 
-      Assert.Equal(positionBeforeIsEof, kaitaiStreamSUT.Pos);
+        if (shouldBeEof)
+        {
+          Assert.True(kaitaiStreamSUT.IsEof);
+        }
+        else
+        {
+          Assert.False(kaitaiStreamSUT.IsEof);
+        }
+
+        Assert.Equal(positionBeforeIsEof, kaitaiStreamSUT.Pos);
+      });
     }
 
     [Theory]
@@ -57,9 +92,12 @@ namespace Kaitai.Struct.Runtime.Async.Tests
     {
       var kaitaiStreamSUT = Create(new byte[1]);
 
-      await kaitaiStreamSUT.ReadBytesAsync(readBitsAmount);
+      await EvaluateMaybeCancelled(async () =>
+      {
+        await kaitaiStreamSUT.ReadBytesAsync(readBitsAmount);
 
-      Assert.Equal(expectedPos, kaitaiStreamSUT.Pos);
+        Assert.Equal(expectedPos, kaitaiStreamSUT.Pos);
+      });
     }
 
     [Theory]
@@ -69,9 +107,12 @@ namespace Kaitai.Struct.Runtime.Async.Tests
     {
       var kaitaiStreamSUT = Create(new byte[1]);
 
-      await kaitaiStreamSUT.SeekAsync(position);
+      await EvaluateMaybeCancelled(async () =>
+      {
+        await kaitaiStreamSUT.SeekAsync(position);
 
-      Assert.Equal(expectedPos, kaitaiStreamSUT.Pos);
+        Assert.Equal(expectedPos, kaitaiStreamSUT.Pos);
+      });
     }
 
     [Theory]

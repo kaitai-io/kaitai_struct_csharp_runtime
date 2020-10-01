@@ -1,4 +1,5 @@
 ﻿using System.IO;
+using System.IO.Pipelines;
 using System.Linq;
 using System.Threading.Tasks;
 using Kaitai.Async;
@@ -8,17 +9,48 @@ namespace Kaitai.Struct.Runtime.Async.Tests
 {
   public class StreamReadDecimalAsyncTests : ReadDecimalAsyncTests
   {
+    public StreamReadDecimalAsyncTests() : base(false)
+    {
+    }
+
     protected override KaitaiAsyncStream Create(byte[] data) => new KaitaiAsyncStream(data);
   }
 
   public class PipeReaderReadDecimalAsyncTests : ReadDecimalAsyncTests
   {
+    public PipeReaderReadDecimalAsyncTests() : base(false)
+    {
+    }
+
     protected override KaitaiAsyncStream Create(byte[] data) =>
-      new KaitaiAsyncStream(System.IO.Pipelines.PipeReader.Create(new MemoryStream(data)));
+      new KaitaiAsyncStream(PipeReader.Create(new MemoryStream(data)));
   }
 
-  public abstract class ReadDecimalAsyncTests
+  public class StreamReadDecimalAsyncCancelledTests : ReadDecimalAsyncTests
   {
+    public StreamReadDecimalAsyncCancelledTests() : base(true)
+    {
+    }
+
+    protected override KaitaiAsyncStream Create(byte[] data) => new KaitaiAsyncStream(data);
+  }
+
+  public class PipeReaderReadDecimalAsyncCancelledTests : ReadDecimalAsyncTests
+  {
+    public PipeReaderReadDecimalAsyncCancelledTests() : base(true)
+    {
+    }
+
+    protected override KaitaiAsyncStream Create(byte[] data) =>
+      new KaitaiAsyncStream(PipeReader.Create(new MemoryStream(data)));
+  }
+
+  public abstract class ReadDecimalAsyncTests : CancelableTestsBase
+  {
+    protected ReadDecimalAsyncTests(bool isTestingCancellation) : base(isTestingCancellation)
+    {
+    }
+
     protected abstract KaitaiAsyncStream Create(byte[] data);
 
     [Theory]
@@ -27,7 +59,7 @@ namespace Kaitai.Struct.Runtime.Async.Tests
     {
       var kaitaiStreamSUT = Create(streamContent.Reverse().ToArray());
 
-      Assert.Equal(expected, await kaitaiStreamSUT.ReadF4beAsync());
+      await Evaluate(async () => Assert.Equal(expected, await kaitaiStreamSUT.ReadF4beAsync(CancellationToken)));
     }
 
     [Theory]
@@ -36,7 +68,7 @@ namespace Kaitai.Struct.Runtime.Async.Tests
     {
       var kaitaiStreamSUT = Create(streamContent);
 
-      Assert.Equal(expected, await kaitaiStreamSUT.ReadF4leAsync());
+      await Evaluate(async () => Assert.Equal(expected, await kaitaiStreamSUT.ReadF4leAsync(CancellationToken)));
     }
 
     [Theory]
@@ -45,7 +77,7 @@ namespace Kaitai.Struct.Runtime.Async.Tests
     {
       var kaitaiStreamSUT = Create(streamContent.Reverse().ToArray());
 
-      Assert.Equal(expected, await kaitaiStreamSUT.ReadF8beAsync());
+      await Evaluate(async () => Assert.Equal(expected, await kaitaiStreamSUT.ReadF8beAsync(CancellationToken)));
     }
 
     [Theory]
@@ -54,7 +86,7 @@ namespace Kaitai.Struct.Runtime.Async.Tests
     {
       var kaitaiStreamSUT = Create(streamContent);
 
-      Assert.Equal(expected, await kaitaiStreamSUT.ReadF8leAsync());
+      await Evaluate(async () => Assert.Equal(expected, await kaitaiStreamSUT.ReadF8leAsync(CancellationToken)));
     }
   }
 }

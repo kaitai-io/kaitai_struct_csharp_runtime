@@ -2,6 +2,7 @@
 using System.Buffers;
 using System.IO;
 using System.IO.Pipelines;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Kaitai.Async
@@ -20,28 +21,28 @@ namespace Kaitai.Async
 
     public long Position { get; protected set; }
 
-    public virtual async ValueTask<long> GetSizeAsync()
+    public virtual async ValueTask<long> GetSizeAsync(CancellationToken cancellationToken = default)
     {
-      await FillReadResultBufferToTheEnd();
+      await FillReadResultBufferToTheEndAsync(cancellationToken);
 
       return ReadResult.Buffer.Length;
     }
 
-    public virtual async ValueTask<bool> IsEofAsync()
+    public virtual async ValueTask<bool> IsEofAsync(CancellationToken cancellationToken = default)
     {
-      await EnsureReadResultIsNotDefault();
+      await EnsureReadResultIsNotDefaultAsync(cancellationToken);
 
       if (Position >= ReadResult.Buffer.Length && !ReadResult.IsCompleted)
       {
         PipeReader.AdvanceTo(ReadResult.Buffer.Start, ReadResult.Buffer.GetPosition(Position));
-        ReadResult = await PipeReader.ReadAsync();
+        ReadResult = await PipeReader.ReadAsync(cancellationToken);
       }
 
       return Position >= ReadResult.Buffer.Length && ReadResult.IsCompleted;
     }
 
 
-    public virtual async ValueTask SeekAsync(long position)
+    public virtual async ValueTask SeekAsync(long position, CancellationToken cancellationToken = default)
     {
       if (position <= Position)
       {
@@ -49,12 +50,12 @@ namespace Kaitai.Async
       }
       else
       {
-        await EnsureReadResultIsNotDefault();
+        await EnsureReadResultIsNotDefaultAsync(cancellationToken);
 
         while (ReadResult.Buffer.Length < position && !ReadResult.IsCompleted)
         {
           PipeReader.AdvanceTo(ReadResult.Buffer.Start, ReadResult.Buffer.End);
-          ReadResult = await PipeReader.ReadAsync();
+          ReadResult = await PipeReader.ReadAsync(cancellationToken);
         }
 
         if (ReadResult.Buffer.Length <= position)
@@ -71,15 +72,15 @@ namespace Kaitai.Async
       }
     }
 
-    public virtual async ValueTask<byte> ReadByteAsync()
+    public virtual async ValueTask<byte> ReadByteAsync(CancellationToken cancellationToken = default)
     {
-      await EnsureReadResultIsNotDefault();
+      await EnsureReadResultIsNotDefaultAsync(cancellationToken);
 
       var value = byte.MinValue;
       while (!TryReadByte(out value) && !ReadResult.IsCompleted)
       {
         PipeReader.AdvanceTo(ReadResult.Buffer.Start, ReadResult.Buffer.GetPosition(Position));
-        ReadResult = await PipeReader.ReadAsync();
+        ReadResult = await PipeReader.ReadAsync(cancellationToken);
       }
 
       Position += 1;
@@ -93,7 +94,7 @@ namespace Kaitai.Async
       }
     }
 
-    public virtual async ValueTask<byte[]> ReadBytesAsync(long count)
+    public virtual async ValueTask<byte[]> ReadBytesAsync(long count, CancellationToken cancellationToken = default)
     {
       if (count < 0 || count > int.MaxValue)
       {
@@ -101,7 +102,7 @@ namespace Kaitai.Async
           $"requested {count} bytes, while only non-negative int32 amount of bytes possible");
       }
 
-      await EnsureReadResultIsNotDefault();
+      await EnsureReadResultIsNotDefaultAsync(cancellationToken);
 
       byte[] value = null;
 
@@ -114,7 +115,7 @@ namespace Kaitai.Async
         }
 
         PipeReader.AdvanceTo(ReadResult.Buffer.Start, ReadResult.Buffer.GetPosition(Position));
-        ReadResult = await PipeReader.ReadAsync();
+        ReadResult = await PipeReader.ReadAsync(cancellationToken);
       }
 
       Position += count;
@@ -133,9 +134,9 @@ namespace Kaitai.Async
       }
     }
 
-    public virtual async ValueTask<byte[]> ReadBytesFullAsync()
+    public virtual async ValueTask<byte[]> ReadBytesFullAsync(CancellationToken cancellationToken = default)
     {
-      await FillReadResultBufferToTheEnd();
+      await FillReadResultBufferToTheEndAsync(cancellationToken);
 
       PipeReader.AdvanceTo(ReadResult.Buffer.Start, ReadResult.Buffer.End);
       var value = ReadResult.Buffer.Slice(Position, ReadResult.Buffer.End).ToArray();
@@ -143,22 +144,22 @@ namespace Kaitai.Async
       return value;
     }
 
-    private async ValueTask FillReadResultBufferToTheEnd()
+    private async ValueTask FillReadResultBufferToTheEndAsync(CancellationToken cancellationToken = default)
     {
-      await EnsureReadResultIsNotDefault();
+      await EnsureReadResultIsNotDefaultAsync(cancellationToken);
 
       while (!ReadResult.IsCompleted)
       {
         PipeReader.AdvanceTo(ReadResult.Buffer.Start, ReadResult.Buffer.End);
-        ReadResult = await PipeReader.ReadAsync();
+        ReadResult = await PipeReader.ReadAsync(cancellationToken);
       }
     }
 
-    private async ValueTask EnsureReadResultIsNotDefault()
+    private async ValueTask EnsureReadResultIsNotDefaultAsync(CancellationToken cancellationToken = default)
     {
       if (ReadResult.Equals(default(ReadResult)))
       {
-        ReadResult = await PipeReader.ReadAsync();
+        ReadResult = await PipeReader.ReadAsync(cancellationToken);
       }
     }
   }
