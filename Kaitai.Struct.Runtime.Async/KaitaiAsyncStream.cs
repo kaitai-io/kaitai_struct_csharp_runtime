@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Pipelines;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Kaitai.Async
@@ -53,12 +54,12 @@ namespace Kaitai.Async
     public override bool IsEof =>
       ReaderContext.IsEofAsync().GetAwaiter().GetResult() && _bitsLeft == 0;
 
-    public async ValueTask<bool> IsEofAsync() => await ReaderContext.IsEofAsync() && _bitsLeft == 0;
+    public async ValueTask<bool> IsEofAsync(CancellationToken cancellationToken = default) => await ReaderContext.IsEofAsync(cancellationToken) && _bitsLeft == 0;
 
-    public ValueTask<long> GetSizeAsync() => ReaderContext.GetSizeAsync();
+    public ValueTask<long> GetSizeAsync(CancellationToken cancellationToken = default) => ReaderContext.GetSizeAsync(cancellationToken);
 
-    public virtual async Task SeekAsync(long position) => await ReaderContext.SeekAsync(position);
-    public virtual async Task SeekAsync(ulong position) => await SeekAsync((long)position);
+    public virtual async Task SeekAsync(long position, CancellationToken cancellationToken = default) => await ReaderContext.SeekAsync(position, cancellationToken);
+    public virtual async Task SeekAsync(ulong position, CancellationToken cancellationToken = default) => await SeekAsync((long)position, cancellationToken);
 
     public override long Pos => ReaderContext.Position;
 
@@ -70,25 +71,25 @@ namespace Kaitai.Async
 
     #region Signed
 
-    public async Task<sbyte> ReadS1Async() => (sbyte) await ReadU1Async();
+    public async Task<sbyte> ReadS1Async(CancellationToken cancellationToken = default) => (sbyte) await ReadU1Async(cancellationToken);
 
     #region Big-endian
 
-    public async Task<short> ReadS2beAsync() => BitConverter.ToInt16(await ReadBytesNormalisedBigEndianAsync(2), 0);
+    public async Task<short> ReadS2beAsync(CancellationToken cancellationToken = default) => BitConverter.ToInt16(await ReadBytesNormalisedBigEndianAsync(2, cancellationToken), 0);
 
-    public async Task<int> ReadS4beAsync() => BitConverter.ToInt32(await ReadBytesNormalisedBigEndianAsync(4), 0);
+    public async Task<int> ReadS4beAsync(CancellationToken cancellationToken = default) => BitConverter.ToInt32(await ReadBytesNormalisedBigEndianAsync(4, cancellationToken), 0);
 
-    public async Task<long> ReadS8beAsync() => BitConverter.ToInt64(await ReadBytesNormalisedBigEndianAsync(8), 0);
+    public async Task<long> ReadS8beAsync(CancellationToken cancellationToken = default) => BitConverter.ToInt64(await ReadBytesNormalisedBigEndianAsync(8, cancellationToken), 0);
 
     #endregion
 
     #region Little-endian
 
-    public async Task<short> ReadS2leAsync() => BitConverter.ToInt16(await ReadBytesNormalisedLittleEndianAsync(2), 0);
+    public async Task<short> ReadS2leAsync(CancellationToken cancellationToken = default) => BitConverter.ToInt16(await ReadBytesNormalisedLittleEndianAsync(2, cancellationToken), 0);
 
-    public async Task<int> ReadS4leAsync() => BitConverter.ToInt32(await ReadBytesNormalisedLittleEndianAsync(4), 0);
+    public async Task<int> ReadS4leAsync(CancellationToken cancellationToken = default) => BitConverter.ToInt32(await ReadBytesNormalisedLittleEndianAsync(4, cancellationToken), 0);
 
-    public async Task<long> ReadS8leAsync() => BitConverter.ToInt64(await ReadBytesNormalisedLittleEndianAsync(8), 0);
+    public async Task<long> ReadS8leAsync(CancellationToken cancellationToken = default) => BitConverter.ToInt64(await ReadBytesNormalisedLittleEndianAsync(8, cancellationToken), 0);
 
     #endregion
 
@@ -96,26 +97,26 @@ namespace Kaitai.Async
 
     #region Unsigned
 
-    public async Task<byte> ReadU1Async() => await ReaderContext.ReadByteAsync();
+    public async Task<byte> ReadU1Async(CancellationToken cancellationToken = default) => await ReaderContext.ReadByteAsync(cancellationToken);
 
     #region Big-endian
 
-    public async Task<ushort> ReadU2beAsync() => BitConverter.ToUInt16(await ReadBytesNormalisedBigEndianAsync(2), 0);
+    public async Task<ushort> ReadU2beAsync(CancellationToken cancellationToken = default) => BitConverter.ToUInt16(await ReadBytesNormalisedBigEndianAsync(2, cancellationToken), 0);
 
-    public async Task<uint> ReadU4beAsync() => BitConverter.ToUInt32(await ReadBytesNormalisedBigEndianAsync(4), 0);
+    public async Task<uint> ReadU4beAsync(CancellationToken cancellationToken = default) => BitConverter.ToUInt32(await ReadBytesNormalisedBigEndianAsync(4, cancellationToken), 0);
 
-    public async Task<ulong> ReadU8beAsync() => BitConverter.ToUInt64(await ReadBytesNormalisedBigEndianAsync(8), 0);
+    public async Task<ulong> ReadU8beAsync(CancellationToken cancellationToken = default) => BitConverter.ToUInt64(await ReadBytesNormalisedBigEndianAsync(8, cancellationToken), 0);
 
     #endregion
 
     #region Little-endian
 
-    public async Task<ushort> ReadU2leAsync() =>
-      BitConverter.ToUInt16(await ReadBytesNormalisedLittleEndianAsync(2), 0);
+    public async Task<ushort> ReadU2leAsync(CancellationToken cancellationToken = default) =>
+      BitConverter.ToUInt16(await ReadBytesNormalisedLittleEndianAsync(2, cancellationToken), 0);
 
-    public async Task<uint> ReadU4leAsync() => BitConverter.ToUInt32(await ReadBytesNormalisedLittleEndianAsync(4), 0);
+    public async Task<uint> ReadU4leAsync(CancellationToken cancellationToken = default) => BitConverter.ToUInt32(await ReadBytesNormalisedLittleEndianAsync(4, cancellationToken), 0);
 
-    public async Task<ulong> ReadU8leAsync() => BitConverter.ToUInt64(await ReadBytesNormalisedLittleEndianAsync(8), 0);
+    public async Task<ulong> ReadU8leAsync(CancellationToken cancellationToken = default) => BitConverter.ToUInt64(await ReadBytesNormalisedLittleEndianAsync(8, cancellationToken), 0);
 
     #endregion
 
@@ -127,18 +128,18 @@ namespace Kaitai.Async
 
     #region Big-endian
 
-    public async Task<float> ReadF4beAsync() => BitConverter.ToSingle(await ReadBytesNormalisedBigEndianAsync(4), 0);
+    public async Task<float> ReadF4beAsync(CancellationToken cancellationToken = default) => BitConverter.ToSingle(await ReadBytesNormalisedBigEndianAsync(4, cancellationToken), 0);
 
-    public async Task<double> ReadF8beAsync() => BitConverter.ToDouble(await ReadBytesNormalisedBigEndianAsync(8), 0);
+    public async Task<double> ReadF8beAsync(CancellationToken cancellationToken = default) => BitConverter.ToDouble(await ReadBytesNormalisedBigEndianAsync(8, cancellationToken), 0);
 
     #endregion
 
     #region Little-endian
 
-    public async Task<float> ReadF4leAsync() => BitConverter.ToSingle(await ReadBytesNormalisedLittleEndianAsync(4), 0);
+    public async Task<float> ReadF4leAsync(CancellationToken cancellationToken = default) => BitConverter.ToSingle(await ReadBytesNormalisedLittleEndianAsync(4, cancellationToken), 0);
 
-    public async Task<double> ReadF8leAsync() =>
-      BitConverter.ToDouble(await ReadBytesNormalisedLittleEndianAsync(8), 0);
+    public async Task<double> ReadF8leAsync(CancellationToken cancellationToken = default) =>
+      BitConverter.ToDouble(await ReadBytesNormalisedLittleEndianAsync(8, cancellationToken), 0);
 
     #endregion
 
@@ -152,7 +153,7 @@ namespace Kaitai.Async
       _bitsLeft = 0;
     }
 
-    public async Task<ulong> ReadBitsIntAsync(int n)
+    public async Task<ulong> ReadBitsIntAsync(int n, CancellationToken cancellationToken = default)
     {
       int bitsNeeded = n - _bitsLeft;
       if (bitsNeeded > 0)
@@ -161,7 +162,7 @@ namespace Kaitai.Async
         // 8 bits => 1 byte
         // 9 bits => 2 bytes
         int bytesNeeded = (bitsNeeded - 1) / 8 + 1;
-        var buf = await ReadBytesAsync(bytesNeeded);
+        var buf = await ReadBytesAsync(bytesNeeded, cancellationToken);
         for (var i = 0; i < buf.Length; i++)
         {
           _bits <<= 8;
@@ -186,7 +187,7 @@ namespace Kaitai.Async
     }
 
     //Method ported from algorithm specified @ issue#155
-    public async Task<ulong> ReadBitsIntLeAsync(int n)
+    public async Task<ulong> ReadBitsIntLeAsync(int n, CancellationToken cancellationToken = default)
     {
       int bitsNeeded = n - _bitsLeft;
 
@@ -196,7 +197,7 @@ namespace Kaitai.Async
         // 8 bits => 1 byte
         // 9 bits => 2 bytes
         int bytesNeeded = (bitsNeeded - 1) / 8 + 1;
-        var buf = await ReadBytesAsync(bytesNeeded);
+        var buf = await ReadBytesAsync(bytesNeeded, cancellationToken);
         for (var i = 0; i < buf.Length; i++)
         {
           ulong v = (ulong) buf[i] << _bitsLeft;
@@ -222,9 +223,9 @@ namespace Kaitai.Async
 
     #region Byte arrays
 
-    public async Task<byte[]> ReadBytesAsync(long count) => await ReaderContext.ReadBytesAsync(count);
+    public async Task<byte[]> ReadBytesAsync(long count, CancellationToken cancellationToken = default) => await ReaderContext.ReadBytesAsync(count, cancellationToken);
 
-    public async Task<byte[]> ReadBytesAsync(ulong count)
+    public async Task<byte[]> ReadBytesAsync(ulong count, CancellationToken cancellationToken = default)
     {
       if (count > int.MaxValue)
       {
@@ -232,7 +233,7 @@ namespace Kaitai.Async
           $"requested {count} bytes, while only non-negative int32 amount of bytes possible");
       }
 
-      return await ReadBytesAsync((long) count);
+      return await ReadBytesAsync((long) count, cancellationToken);
     }
 
     /// <summary>
@@ -240,9 +241,9 @@ namespace Kaitai.Async
     /// </summary>
     /// <param name="count">The number of bytes to read</param>
     /// <returns>An array of bytes that matches the endianness of the current platform</returns>
-    protected async Task<byte[]> ReadBytesNormalisedLittleEndianAsync(int count)
+    protected async Task<byte[]> ReadBytesNormalisedLittleEndianAsync(int count, CancellationToken cancellationToken = default)
     {
-      var bytes = await ReadBytesAsync(count);
+      var bytes = await ReadBytesAsync(count, cancellationToken);
       if (!IsLittleEndian)
       {
         Array.Reverse(bytes);
@@ -256,9 +257,9 @@ namespace Kaitai.Async
     /// </summary>
     /// <param name="count">The number of bytes to read</param>
     /// <returns>An array of bytes that matches the endianness of the current platform</returns>
-    protected async Task<byte[]> ReadBytesNormalisedBigEndianAsync(int count)
+    protected async Task<byte[]> ReadBytesNormalisedBigEndianAsync(int count, CancellationToken cancellationToken = default)
     {
-      var bytes = await ReadBytesAsync(count);
+      var bytes = await ReadBytesAsync(count, cancellationToken);
       if (IsLittleEndian)
       {
         Array.Reverse(bytes);
@@ -271,7 +272,7 @@ namespace Kaitai.Async
     /// Read all the remaining bytes from the stream until the end is reached
     /// </summary>
     /// <returns></returns>
-    public virtual async Task<byte[]> ReadBytesFullAsync() => await ReaderContext.ReadBytesFullAsync();
+    public virtual async Task<byte[]> ReadBytesFullAsync(CancellationToken cancellationToken = default) => await ReaderContext.ReadBytesFullAsync(cancellationToken);
 
     /// <summary>
     /// Read a terminated string from the stream
@@ -280,16 +281,18 @@ namespace Kaitai.Async
     /// <param name="includeTerminator">True to include the terminator in the returned string</param>
     /// <param name="consumeTerminator">True to consume the terminator byte before returning</param>
     /// <param name="eosError">True to throw an error when the EOS was reached before the terminator</param>
+    /// <param name="cancellationToken"></param>
     /// <returns></returns>
     public async Task<byte[]> ReadBytesTermAsync(byte terminator,
       bool includeTerminator,
       bool consumeTerminator,
-      bool eosError)
+      bool eosError,
+      CancellationToken cancellationToken = default)
     {
       var bytes = new List<byte>();
       while (true)
       {
-        if (IsEof)
+        if (await IsEofAsync(cancellationToken))
         {
           if (eosError)
           {
@@ -300,7 +303,7 @@ namespace Kaitai.Async
           break;
         }
 
-        byte b = await ReadU1Async();
+        byte b = await ReadU1Async(cancellationToken);
         if (b == terminator)
         {
           if (includeTerminator)
@@ -310,7 +313,7 @@ namespace Kaitai.Async
 
           if (!consumeTerminator)
           {
-            await SeekAsync(Pos - 1);
+            await SeekAsync(Pos - 1, cancellationToken);
           }
 
           break;
@@ -326,10 +329,11 @@ namespace Kaitai.Async
     /// Read a specific set of bytes and assert that they are the same as an expected result
     /// </summary>
     /// <param name="expected">The expected result</param>
+    /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    public async Task<byte[]> EnsureFixedContentsAsync(byte[] expected)
+    public async Task<byte[]> EnsureFixedContentsAsync(byte[] expected, CancellationToken cancellationToken = default)
     {
-      var bytes = await ReadBytesAsync(expected.Length);
+      var bytes = await ReadBytesAsync(expected.Length, cancellationToken);
 
       if (bytes.Length != expected.Length) //TODO Is this necessary?
       {

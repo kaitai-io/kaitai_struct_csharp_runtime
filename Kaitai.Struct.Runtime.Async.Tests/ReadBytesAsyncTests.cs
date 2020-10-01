@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Pipelines;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -11,19 +12,48 @@ namespace Kaitai.Struct.Runtime.Async.Tests
 {
   public class StreamReadBytesAsyncTests : ReadBytesAsyncTests
   {
+    public StreamReadBytesAsyncTests() : base(false)
+    {
+    }
+
     protected override KaitaiAsyncStream Create(byte[] data) => new KaitaiAsyncStream(data);
   }
 
   public class PipeReaderReadBytesAsyncTests : ReadBytesAsyncTests
   {
+    public PipeReaderReadBytesAsyncTests() : base(false)
+    {
+    }
+
     protected override KaitaiAsyncStream Create(byte[] data) =>
-      new KaitaiAsyncStream(System.IO.Pipelines.PipeReader.Create(new MemoryStream(data)));
+      new KaitaiAsyncStream(PipeReader.Create(new MemoryStream(data)));
   }
 
-  public abstract class ReadBytesAsyncTests
+  public class StreamReadBytesAsyncCancelledTests : ReadBytesAsyncTests
   {
-    protected abstract KaitaiAsyncStream Create(byte[] data);
-        
+    public StreamReadBytesAsyncCancelledTests() : base(true)
+    {
+    }
+
+    protected override KaitaiAsyncStream Create(byte[] data) => new KaitaiAsyncStream(data);
+  }
+
+  public class PipeReaderReadBytesAsyncCancelledTests : ReadBytesAsyncTests
+  {
+    public PipeReaderReadBytesAsyncCancelledTests() : base(true)
+    {
+    }
+
+    protected override KaitaiAsyncStream Create(byte[] data) =>
+      new KaitaiAsyncStream(PipeReader.Create(new MemoryStream(data)));
+  }
+
+  public abstract class ReadBytesAsyncTests : CancelableTestsBase
+  {
+    protected ReadBytesAsyncTests(bool isTestingCancellation) : base(isTestingCancellation)
+    {
+    }
+
     public static IEnumerable<object[]> BytesData =>
       new List<(byte[] streamContent, int bytesCount)>
       {
@@ -33,25 +63,6 @@ namespace Kaitai.Struct.Runtime.Async.Tests
         (new byte[] {0b_1101_0101, 0b_1101_0101}, 2)
       }.Select(t => new object[] {t.streamContent, t.bytesCount});
 
-
-    [Theory]
-    [MemberData(nameof(BytesData))]
-    public async Task ReadBytesAsync_long_Test(byte[] streamContent, long bytesCount)
-    {
-      var kaitaiStreamSUT = Create(streamContent);
-
-      Assert.Equal(streamContent.Take((int) bytesCount), await kaitaiStreamSUT.ReadBytesAsync(bytesCount));
-    }
-
-    [Theory]
-    [MemberData(nameof(BytesData))]
-    public async Task ReadBytesAsync_ulong_Test(byte[] streamContent, ulong bytesCount)
-    {
-      var kaitaiStreamSUT = Create(streamContent);
-
-      Assert.Equal(streamContent.Take((int) bytesCount), await kaitaiStreamSUT.ReadBytesAsync(bytesCount));
-    }
-
     public static IEnumerable<object[]> StringData =>
       new List<string>
       {
@@ -59,42 +70,6 @@ namespace Kaitai.Struct.Runtime.Async.Tests
         "ABC",
         "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
       }.Select(t => new[] {Encoding.ASCII.GetBytes(t)});
-
-
-    [Theory]
-    [MemberData(nameof(StringData))]
-    public async Task ReadBytesFullAsync_Test(byte[] streamContent)
-    {
-      var kaitaiStreamSUT = Create(streamContent);
-
-      Assert.Equal(streamContent, await kaitaiStreamSUT.ReadBytesFullAsync());
-    }
-
-    [Theory]
-    [MemberData(nameof(StringData))]
-    public async Task EnsureFixedContentsAsync_Test(byte[] streamContent)
-    {
-      var kaitaiStreamSUT = Create(streamContent);
-
-      Assert.Equal(streamContent, await kaitaiStreamSUT.EnsureFixedContentsAsync(streamContent));
-    }
-
-    [Theory]
-    [MemberData(nameof(StringData))]
-    public async Task EnsureFixedContentsAsync_ThrowsIfByteIsChanged(byte[] streamContent)
-    {
-      if (streamContent.Length == 0)
-      {
-        return;
-      }
-
-      var kaitaiStreamSUT = Create(streamContent);
-
-      var expected = streamContent.ToArray();
-      expected[0] = (byte) ~expected[0];
-
-      await Assert.ThrowsAsync<Exception>(async () => await kaitaiStreamSUT.EnsureFixedContentsAsync(expected));
-    }
 
     public static IEnumerable<object[]> StringWithTerminatorsData =>
       new List<(string streamContent, string expected, char terminator, bool isPresent, bool shouldInclude)>
@@ -119,6 +94,70 @@ namespace Kaitai.Struct.Runtime.Async.Tests
         t.isPresent, t.shouldInclude
       });
 
+    protected abstract KaitaiAsyncStream Create(byte[] data);
+
+
+    [Theory]
+    [MemberData(nameof(BytesData))]
+    public async Task ReadBytesAsync_long_Test(byte[] streamContent, long bytesCount)
+    {
+      var kaitaiStreamSUT = Create(streamContent);
+
+      await Evaluate(async () =>
+        Assert.Equal(streamContent.Take((int) bytesCount),
+          await kaitaiStreamSUT.ReadBytesAsync(bytesCount, CancellationToken)));
+    }
+
+    [Theory]
+    [MemberData(nameof(BytesData))]
+    public async Task ReadBytesAsync_ulong_Test(byte[] streamContent, ulong bytesCount)
+    {
+      var kaitaiStreamSUT = Create(streamContent);
+
+      await Evaluate(async () =>
+        Assert.Equal(streamContent.Take((int) bytesCount),
+          await kaitaiStreamSUT.ReadBytesAsync(bytesCount, CancellationToken)));
+    }
+
+
+    [Theory]
+    [MemberData(nameof(StringData))]
+    public async Task ReadBytesFullAsync_Test(byte[] streamContent)
+    {
+      var kaitaiStreamSUT = Create(streamContent);
+
+      await Evaluate(async () =>
+        Assert.Equal(streamContent, await kaitaiStreamSUT.ReadBytesFullAsync(CancellationToken)));
+    }
+
+    [Theory]
+    [MemberData(nameof(StringData))]
+    public async Task EnsureFixedContentsAsync_Test(byte[] streamContent)
+    {
+      var kaitaiStreamSUT = Create(streamContent);
+
+      await Evaluate(async () =>
+        Assert.Equal(streamContent, await kaitaiStreamSUT.EnsureFixedContentsAsync(streamContent, CancellationToken)));
+    }
+
+    [Theory]
+    [MemberData(nameof(StringData))]
+    public async Task EnsureFixedContentsAsync_ThrowsIfByteIsChanged(byte[] streamContent)
+    {
+      if (streamContent.Length == 0)
+      {
+        return;
+      }
+
+      var kaitaiStreamSUT = Create(streamContent);
+
+      var expected = streamContent.ToArray();
+      expected[0] = (byte) ~expected[0];
+
+      await Evaluate<Exception>(async () =>
+        await kaitaiStreamSUT.EnsureFixedContentsAsync(expected, CancellationToken));
+    }
+
     [Theory]
     [MemberData(nameof(StringWithTerminatorsData))]
     public async Task ReadBytesTermAsync(byte[] streamContent,
@@ -129,7 +168,8 @@ namespace Kaitai.Struct.Runtime.Async.Tests
     {
       var kaitaiStreamSUT = Create(streamContent);
 
-      Assert.Equal(expected, await kaitaiStreamSUT.ReadBytesTermAsync(terminator, shouldInclude, false, false));
+      await Evaluate(async () => Assert.Equal(expected,
+        await kaitaiStreamSUT.ReadBytesTermAsync(terminator, shouldInclude, false, false, CancellationToken)));
     }
 
     [Theory]
@@ -147,8 +187,8 @@ namespace Kaitai.Struct.Runtime.Async.Tests
         return;
       }
 
-      await Assert.ThrowsAsync<EndOfStreamException>(async () =>
-        await kaitaiStreamSUT.ReadBytesTermAsync(terminator, shouldInclude, false, true));
+      await Evaluate<EndOfStreamException>(async () =>
+        await kaitaiStreamSUT.ReadBytesTermAsync(terminator, shouldInclude, false, true, CancellationToken));
     }
 
     [Theory]
@@ -162,17 +202,20 @@ namespace Kaitai.Struct.Runtime.Async.Tests
       //Arrange
       var kaitaiStreamSUT = Create(streamContent);
 
-      //Act
-      await kaitaiStreamSUT.ReadBytesTermAsync(terminator, shouldInclude, false, false);
-
-      //Assert
-      int amountToConsume = expected.Length;
-      if (expected.Length > 0 && shouldInclude && terminatorIsPresent)
+      await Evaluate(async () =>
       {
-        amountToConsume--;
-      }
+        //Act
+        await kaitaiStreamSUT.ReadBytesTermAsync(terminator, shouldInclude, false, false, CancellationToken);
 
-      Assert.Equal(amountToConsume, kaitaiStreamSUT.Pos);
+        //Assert
+        int amountToConsume = expected.Length;
+        if (expected.Length > 0 && shouldInclude && terminatorIsPresent)
+        {
+          amountToConsume--;
+        }
+
+        Assert.Equal(amountToConsume, kaitaiStreamSUT.Pos);
+      });
     }
 
     [Theory]
@@ -186,17 +229,20 @@ namespace Kaitai.Struct.Runtime.Async.Tests
       //Arrange
       var kaitaiStreamSUT = Create(streamContent);
 
-      //Act
-      await kaitaiStreamSUT.ReadBytesTermAsync(terminator, shouldInclude, true, false);
-
-      //Assert
-      int amountToConsume = expected.Length;
-      if (!shouldInclude && terminatorIsPresent)
+      await Evaluate(async () =>
       {
-        amountToConsume++;
-      }
+        //Act
+        await kaitaiStreamSUT.ReadBytesTermAsync(terminator, shouldInclude, true, false, CancellationToken);
 
-      Assert.Equal(amountToConsume, kaitaiStreamSUT.Pos);
+        //Assert
+        int amountToConsume = expected.Length;
+        if (!shouldInclude && terminatorIsPresent)
+        {
+          amountToConsume++;
+        }
+
+        Assert.Equal(amountToConsume, kaitaiStreamSUT.Pos);
+      });
     }
 
     [Fact]
@@ -204,8 +250,7 @@ namespace Kaitai.Struct.Runtime.Async.Tests
     {
       var kaitaiStreamSUT = Create(new byte[0]);
 
-      await Assert.ThrowsAsync<EndOfStreamException>(async () =>
-        await kaitaiStreamSUT.ReadBytesAsync(1));
+      await Evaluate<EndOfStreamException>(async () => await kaitaiStreamSUT.ReadBytesAsync(1, CancellationToken));
     }
 
     [Fact]
@@ -213,8 +258,8 @@ namespace Kaitai.Struct.Runtime.Async.Tests
     {
       var kaitaiStreamSUT = Create(new byte[0]);
 
-      await Assert.ThrowsAsync<ArgumentOutOfRangeException>(async () =>
-        await kaitaiStreamSUT.ReadBytesAsync((long) int.MaxValue + 1));
+      await Evaluate<ArgumentOutOfRangeException>(async () =>
+        await kaitaiStreamSUT.ReadBytesAsync((long) int.MaxValue + 1, CancellationToken));
     }
 
     [Fact]
@@ -222,8 +267,8 @@ namespace Kaitai.Struct.Runtime.Async.Tests
     {
       var kaitaiStreamSUT = Create(new byte[0]);
 
-      await Assert.ThrowsAsync<ArgumentOutOfRangeException>(async () =>
-        await kaitaiStreamSUT.ReadBytesAsync(-1));
+      await Evaluate<ArgumentOutOfRangeException>(async () =>
+        await kaitaiStreamSUT.ReadBytesAsync(-1, CancellationToken));
     }
 
     [Fact]
@@ -231,8 +276,8 @@ namespace Kaitai.Struct.Runtime.Async.Tests
     {
       var kaitaiStreamSUT = Create(new byte[0]);
 
-      await Assert.ThrowsAsync<EndOfStreamException>(async () =>
-        await kaitaiStreamSUT.ReadBytesAsync((ulong) 1));
+      await Evaluate<EndOfStreamException>(async () =>
+        await kaitaiStreamSUT.ReadBytesAsync((ulong) 1, CancellationToken));
     }
 
     [Fact]
@@ -240,8 +285,8 @@ namespace Kaitai.Struct.Runtime.Async.Tests
     {
       var kaitaiStreamSUT = Create(new byte[0]);
 
-      await Assert.ThrowsAsync<ArgumentOutOfRangeException>(async () =>
-        await kaitaiStreamSUT.ReadBytesAsync((ulong) int.MaxValue + 1));
+      await Evaluate<ArgumentOutOfRangeException>(async () =>
+        await kaitaiStreamSUT.ReadBytesAsync((ulong) int.MaxValue + 1, CancellationToken));
     }
   }
 }
