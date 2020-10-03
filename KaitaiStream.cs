@@ -287,6 +287,10 @@ namespace Kaitai
             BitsLeft = 0;
         }
 
+        /// <summary>
+        /// Read a n-bit integer in a big-endian manner from the stream
+        /// </summary>
+        /// <returns></returns>
         public ulong ReadBitsIntBe(int n)
         {
             int bitsNeeded = n - BitsLeft;
@@ -324,7 +328,10 @@ namespace Kaitai
             return ReadBitsIntBe(n);
         }
 
-        //Method ported from algorithm specified @ issue#155
+        /// <summary>
+        /// Read a n-bit integer in a little-endian manner from the stream
+        /// </summary>
+        /// <returns></returns>
         public ulong ReadBitsIntLe(int n)
         {
             int bitsNeeded = n - BitsLeft;
