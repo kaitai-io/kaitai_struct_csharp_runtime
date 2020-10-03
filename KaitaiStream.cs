@@ -472,6 +472,7 @@ namespace Kaitai
         /// </summary>
         /// <param name="expected">The expected result</param>
         /// <returns></returns>
+        [Obsolete("use explicit \"if\" using ByteArrayCompare method instead")]
         public byte[] EnsureFixedContents(byte[] expected)
         {
             byte[] bytes = ReadBytes(expected.Length);
