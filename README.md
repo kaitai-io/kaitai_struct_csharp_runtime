@@ -1,7 +1,7 @@
 # Kaitai Struct: runtime library for C# / .NET
 
-![NuGet version](https://img.shields.io/nuget/v/KaitaiStruct.Runtime.CSharp)
-![NuGet downloads](https://img.shields.io/nuget/dt/KaitaiStruct.Runtime.CSharp)
+[![NuGet version](https://img.shields.io/nuget/v/KaitaiStruct.Runtime.CSharp)](https://www.nuget.org/packages/KaitaiStruct.Runtime.CSharp/)
+[![NuGet downloads](https://img.shields.io/nuget/dt/KaitaiStruct.Runtime.CSharp)](https://www.nuget.org/profiles/kaitai-io#:~:text=%20total%20downloads)
 
 This library implements Kaitai Struct API for C#.
 
