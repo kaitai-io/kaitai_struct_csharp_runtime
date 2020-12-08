@@ -58,7 +58,7 @@ namespace Kaitai.Async
           ReadResult = await PipeReader.ReadAsync(cancellationToken);
         }
 
-        if (ReadResult.Buffer.Length <= position)
+        if (ReadResult.Buffer.Length >= position)
         {
           Position = position;
           return;

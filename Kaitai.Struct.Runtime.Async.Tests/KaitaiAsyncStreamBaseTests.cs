@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.IO.Pipelines;
+using System.Threading;
 using System.Threading.Tasks;
 using Kaitai.Async;
 using Xunit;
@@ -112,6 +113,24 @@ namespace Kaitai.Struct.Runtime.Async.Tests
         await kaitaiStreamSUT.SeekAsync(position);
 
         Assert.Equal(expectedPos, kaitaiStreamSUT.Pos);
+      });
+    }
+
+    [Fact]
+    public async Task ForwardSeek_AfterReadToEndAndBackwardSeek_Test()
+    {
+        const int toRead = 1;
+
+      var kaitaiStreamSUT = Create(new byte[2]);
+
+      await EvaluateMaybeCancelled(async () =>
+      { 
+        // Simulates kaitai compiler generated code for multiple fields defined as `instances`
+        await kaitaiStreamSUT.ReadBytesFullAsync(CancellationToken.None);
+        await kaitaiStreamSUT.SeekAsync(0);
+        await kaitaiStreamSUT.SeekAsync(toRead);
+
+        Assert.Equal(toRead, kaitaiStreamSUT.Pos);
       });
     }
 
