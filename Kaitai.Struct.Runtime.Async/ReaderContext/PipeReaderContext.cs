@@ -16,7 +16,7 @@ namespace Kaitai.Async
     {
       PipeReader = pipeReader;
     }
-
+        
     protected long RemainingBytesInReadResult => ReadResult.Buffer.Length - Position;
 
     public long Position { get; protected set; }
@@ -79,7 +79,7 @@ namespace Kaitai.Async
       var value = byte.MinValue;
       while (!TryReadByte(out value) && !ReadResult.IsCompleted)
       {
-        PipeReader.AdvanceTo(ReadResult.Buffer.Start, ReadResult.Buffer.GetPosition(Position));
+        PipeReader.AdvanceTo(ReadResult.Buffer.Start, ReadResult.Buffer.End);
         ReadResult = await PipeReader.ReadAsync(cancellationToken);
       }
 
@@ -114,7 +114,7 @@ namespace Kaitai.Async
             $"requested {count} bytes, but got only {RemainingBytesInReadResult} bytes");
         }
 
-        PipeReader.AdvanceTo(ReadResult.Buffer.Start, ReadResult.Buffer.GetPosition(Position));
+        PipeReader.AdvanceTo(ReadResult.Buffer.Start, ReadResult.Buffer.End);
         ReadResult = await PipeReader.ReadAsync(cancellationToken);
       }
 
