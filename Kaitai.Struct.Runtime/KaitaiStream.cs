@@ -141,7 +141,7 @@ namespace Kaitai
             BitsLeft = 0;
         }
 
-        public ulong ReadBitsInt(int n)
+        public ulong ReadBitsIntBe(int n)
         {
             int bitsNeeded = n - BitsLeft;
             if (bitsNeeded > 0)
@@ -173,6 +173,9 @@ namespace Kaitai
 
             return res;
         }
+
+        public ulong ReadBitsInt(int n) => ReadBitsIntBe(n);
+
 
         //Method ported from algorithm specified @ issue#155
         public ulong ReadBitsIntLe(int n)

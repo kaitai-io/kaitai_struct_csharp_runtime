@@ -153,7 +153,7 @@ namespace Kaitai.Async
       _bitsLeft = 0;
     }
 
-    public async Task<ulong> ReadBitsIntAsync(int n, CancellationToken cancellationToken = default)
+    public async Task<ulong> ReadBitsIntBeAsync(int n, CancellationToken cancellationToken = default)
     {
       int bitsNeeded = n - _bitsLeft;
       if (bitsNeeded > 0)
@@ -185,6 +185,10 @@ namespace Kaitai.Async
 
       return res;
     }
+
+    public Task<ulong> ReadBitsIntAsync(int n, CancellationToken cancellationToken = default) =>
+      ReadBitsIntBeAsync(n, cancellationToken);
+
 
     //Method ported from algorithm specified @ issue#155
     public async Task<ulong> ReadBitsIntLeAsync(int n, CancellationToken cancellationToken = default)
