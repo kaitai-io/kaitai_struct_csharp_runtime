@@ -180,6 +180,7 @@ namespace Kaitai.Async
     /// <param name="expected">The expected result</param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
+    [Obsolete("use explicit \"if\" using ByteArrayCompare method instead")]
     Task<byte[]> EnsureFixedContentsAsync(byte[] expected, CancellationToken cancellationToken = default);
   }
 }

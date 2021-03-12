@@ -160,6 +160,7 @@ namespace Kaitai
         /// </summary>
         /// <param name="expected">The expected result</param>
         /// <returns></returns>
+        [Obsolete("use explicit \"if\" using ByteArrayCompare method instead")]
         byte[] EnsureFixedContents(byte[] expected);
     }
 }
