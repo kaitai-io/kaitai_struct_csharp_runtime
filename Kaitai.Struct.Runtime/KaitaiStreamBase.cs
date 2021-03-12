@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.IO.Compression;
 
@@ -187,6 +189,22 @@ namespace Kaitai
             }
 
             return al - bl;
+        }
+        
+        /// <summary>
+        /// Reverses the string, Unicode-aware.
+        /// </summary>
+        /// <a href="https://stackoverflow.com/a/15029493">taken from here</a>
+        public static string StringReverse(string s)
+        {
+            TextElementEnumerator enumerator = StringInfo.GetTextElementEnumerator(s);
+
+            List<string> elements = new List<string>();
+            while (enumerator.MoveNext())
+                elements.Add(enumerator.GetTextElement());
+
+            elements.Reverse();
+            return string.Concat(elements);
         }
 
         protected static ulong GetMaskOnes(int n) => n == 64 ? 0xffffffffffffffffUL : (1UL << n) - 1;

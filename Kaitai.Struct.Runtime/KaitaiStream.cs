@@ -141,7 +141,7 @@ namespace Kaitai
             BitsLeft = 0;
         }
 
-        public ulong ReadBitsInt(int n)
+        public ulong ReadBitsIntBe(int n)
         {
             int bitsNeeded = n - BitsLeft;
             if (bitsNeeded > 0)
@@ -161,11 +161,9 @@ namespace Kaitai
 
             // raw mask with required number of 1s, starting from lowest bit
             ulong mask = GetMaskOnes(n);
-            // shift mask to align with highest bits available in "bits"
+            // shift "bits" to align the highest bits with the mask & derive reading result
             int shiftBits = BitsLeft - n;
-            mask <<= shiftBits;
-            // derive reading result
-            ulong res = (Bits & mask) >> shiftBits;
+            ulong res = (Bits >> shiftBits) & mask;
             // clear top bits that we've just read => AND with 1s
             BitsLeft -= n;
             mask = GetMaskOnes(BitsLeft);
@@ -173,6 +171,9 @@ namespace Kaitai
 
             return res;
         }
+
+        public ulong ReadBitsInt(int n) => ReadBitsIntBe(n);
+
 
         //Method ported from algorithm specified @ issue#155
         public ulong ReadBitsIntLe(int n)

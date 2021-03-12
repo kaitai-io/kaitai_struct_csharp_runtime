@@ -1,4 +1,5 @@
-﻿using System.Threading;
+﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Kaitai.Async
@@ -130,7 +131,10 @@ namespace Kaitai.Async
     /// <returns></returns>
     Task<double> ReadF8leAsync(CancellationToken cancellationToken = default);
 
+    [Obsolete("use ReadBitsIntBe instead")]
     Task<ulong> ReadBitsIntAsync(int n, CancellationToken cancellationToken = default);
+    
+    Task<ulong> ReadBitsIntBeAsync(int n, CancellationToken cancellationToken = default);
 
     Task<ulong> ReadBitsIntLeAsync(int n, CancellationToken cancellationToken = default);
 
@@ -176,6 +180,7 @@ namespace Kaitai.Async
     /// <param name="expected">The expected result</param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
+    [Obsolete("use explicit \"if\" using ByteArrayCompare method instead")]
     Task<byte[]> EnsureFixedContentsAsync(byte[] expected, CancellationToken cancellationToken = default);
   }
 }

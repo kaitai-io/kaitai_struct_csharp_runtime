@@ -1,4 +1,6 @@
-﻿namespace Kaitai
+﻿using System;
+
+namespace Kaitai
 {
     public interface IKaitaiStream : IKaitaiStreamBase
     {
@@ -116,7 +118,10 @@
         /// <returns></returns>
         double ReadF8le();
 
+        [Obsolete("use ReadBitsIntBe instead")]
         ulong ReadBitsInt(int n);
+        ulong ReadBitsIntBe(int n);
+
 
         ulong ReadBitsIntLe(int n);
 
@@ -155,6 +160,7 @@
         /// </summary>
         /// <param name="expected">The expected result</param>
         /// <returns></returns>
+        [Obsolete("use explicit \"if\" using ByteArrayCompare method instead")]
         byte[] EnsureFixedContents(byte[] expected);
     }
 }
