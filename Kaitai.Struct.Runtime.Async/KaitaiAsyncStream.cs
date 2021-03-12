@@ -173,11 +173,9 @@ namespace Kaitai.Async
 
       // raw mask with required number of 1s, starting from lowest bit
       ulong mask = GetMaskOnes(n);
-      // shift mask to align with highest bits available in "bits"
+      // shift "bits" to align the highest bits with the mask & derive reading result
       int shiftBits = _bitsLeft - n;
-      mask = mask << shiftBits;
-      // derive reading result
-      ulong res = (_bits & mask) >> shiftBits;
+      ulong res = (_bits >> shiftBits) & mask;
       // clear top bits that we've just read => AND with 1s
       _bitsLeft -= n;
       mask = GetMaskOnes(_bitsLeft);
