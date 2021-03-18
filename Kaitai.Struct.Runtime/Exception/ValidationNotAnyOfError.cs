@@ -3,7 +3,7 @@
 namespace Kaitai
 {
     public class ValidationNotAnyOfError : ValidationFailedError {
-        public ValidationNotAnyOfError(Object actual, KaitaiStream io, string srcPath)
+        public ValidationNotAnyOfError(Object actual, IKaitaiStreamBase io, string srcPath)
             : base("not any of the list, got " + actual, io, srcPath)
         {
             this.actual = actual;
