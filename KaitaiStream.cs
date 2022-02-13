@@ -33,8 +33,8 @@ namespace Kaitai
         {
         }
 
-        private ulong Bits = 0;
         private int BitsLeft = 0;
+        private ulong Bits = 0;
 
         static readonly bool IsLittleEndian = BitConverter.IsLittleEndian;
 
@@ -283,8 +283,8 @@ namespace Kaitai
 
         public void AlignToByte()
         {
-            Bits = 0;
             BitsLeft = 0;
+            Bits = 0;
         }
 
         /// <summary>
@@ -293,30 +293,33 @@ namespace Kaitai
         /// <returns></returns>
         public ulong ReadBitsIntBe(int n)
         {
+            ulong res = 0;
+
             int bitsNeeded = n - BitsLeft;
+            BitsLeft = -bitsNeeded & 7; // `-bitsNeeded mod 8`
+
             if (bitsNeeded > 0)
             {
                 // 1 bit  => 1 byte
                 // 8 bits => 1 byte
                 // 9 bits => 2 bytes
-                int bytesNeeded = ((bitsNeeded - 1) / 8) + 1;
+                int bytesNeeded = ((bitsNeeded - 1) / 8) + 1; // `ceil(bitsNeeded / 8)`
                 byte[] buf = ReadBytes(bytesNeeded);
-                for (int i = 0; i < buf.Length; i++)
+                for (int i = 0; i < bytesNeeded; i++)
                 {
-                    Bits <<= 8;
-                    Bits |= buf[i];
-                    BitsLeft += 8;
+                    res = res << 8 | buf[i];
                 }
+
+                ulong newBits = res;
+                res = res >> BitsLeft | Bits << bitsNeeded;
+                Bits = newBits; // will be masked at the end of the function
+            }
+            else
+            {
+                res = Bits >> -bitsNeeded; // shift unneeded bits out
             }
 
-            // raw mask with required number of 1s, starting from lowest bit
-            ulong mask = GetMaskOnes(n);
-            // shift "bits" to align the highest bits with the mask & derive reading result
-            int shiftBits = BitsLeft - n;
-            ulong res = (Bits >> shiftBits) & mask;
-            // clear top bits that we've just read => AND with 1s
-            BitsLeft -= n;
-            mask = GetMaskOnes(BitsLeft);
+            ulong mask = (1UL << BitsLeft) - 1; // `BitsLeft` is in range 0..7, so `(1UL << 64)` does not have to be considered
             Bits &= mask;
 
             return res;
@@ -334,6 +337,7 @@ namespace Kaitai
         /// <returns></returns>
         public ulong ReadBitsIntLe(int n)
         {
+            ulong res = 0;
             int bitsNeeded = n - BitsLeft;
 
             if (bitsNeeded > 0)
@@ -341,32 +345,36 @@ namespace Kaitai
                 // 1 bit  => 1 byte
                 // 8 bits => 1 byte
                 // 9 bits => 2 bytes
-                int bytesNeeded = ((bitsNeeded - 1) / 8) + 1;
+                int bytesNeeded = ((bitsNeeded - 1) / 8) + 1; // `ceil(bitsNeeded / 8)`
                 byte[] buf = ReadBytes(bytesNeeded);
-                for (int i = 0; i < buf.Length; i++)
+                for (int i = 0; i < bytesNeeded; i++)
                 {
-                    ulong v = (ulong)((ulong)buf[i] << BitsLeft);
-                    Bits |= v;
-                    BitsLeft += 8;
+                    res |= ((ulong)buf[i]) << (i * 8);
                 }
+
+                // NB: in C#, bit shift operators on left-hand operand of type `ulong` work
+                // as if the right-hand operand were subjected to `& 63` (`& 0b11_1111`) (see
+                // https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/operators/bitwise-and-shift-operators#shift-count-of-the-shift-operators),
+                // so `res >> 64` is equivalent to `res >> 0` (but we don't want that)
+                ulong newBits = bitsNeeded < 64 ? res >> bitsNeeded : 0;
+                res = res << BitsLeft | Bits;
+                Bits = newBits;
+            }
+            else
+            {
+                res = Bits;
+                Bits >>= n;
             }
 
-            // raw mask with required number of 1s, starting from lowest bit
-            ulong mask = GetMaskOnes(n);
+            BitsLeft = -bitsNeeded & 7; // `-bitsNeeded mod 8`
 
-            // derive reading result
-            ulong res = (Bits & mask);
-
-            // remove bottom bits that we've just read by shifting
-            Bits >>= n;
-            BitsLeft -= n;
-
+            if (n < 64)
+            {
+                ulong mask = (1UL << n) - 1;
+                res &= mask;
+            }
+            // if `n == 64`, do nothing
             return res;
-        }
-
-        private static ulong GetMaskOnes(int n)
-        {
-            return n == 64 ? 0xffffffffffffffffUL : (1UL << n) - 1;
         }
 
         #endregion
