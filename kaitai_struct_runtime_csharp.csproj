@@ -21,11 +21,11 @@
     <PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
     <PackageIcon>icon.png</PackageIcon>
 
-    <AssemblyVersion>0.9.0.0</AssemblyVersion>
-    <FileVersion>0.9.0.0</FileVersion>
-    <Version>0.9.0.0</Version>
+    <AssemblyVersion>0.10.0.0</AssemblyVersion>
+    <FileVersion>0.10.0.0</FileVersion>
+    <Version>0.10.0.0</Version>
 
-    <PackageReleaseNotes>Update to version 0.9</PackageReleaseNotes>
+    <PackageReleaseNotes>Update to version 0.10</PackageReleaseNotes>
   </PropertyGroup>
 
   <ItemGroup>
