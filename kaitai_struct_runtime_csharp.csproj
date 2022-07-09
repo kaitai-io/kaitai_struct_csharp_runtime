@@ -28,7 +28,7 @@
     <PackageProjectUrl>http://kaitai.io/</PackageProjectUrl>
     <RepositoryUrl>https://github.com/kaitai-io/kaitai_struct_csharp_runtime</RepositoryUrl>
     <PackageTags>Kaitai Struct File-Format Binary Protocols</PackageTags>
-    <PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageIcon>icon.png</PackageIcon>
 
     <AssemblyVersion>0.10.0.0</AssemblyVersion>
