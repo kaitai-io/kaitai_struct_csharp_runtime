@@ -22,7 +22,7 @@
     <Company>Kaitai Project</Company>
     <Description>This library implements Kaitai Struct API for C#.</Description>
     <Product>Kaitai Struct Runtime</Product>
-    <Copyright>Copyright © Kaitai Project 2016-2022</Copyright>
+    <Copyright>Copyright © Kaitai Project 2016-2024</Copyright>
     <AssemblyName>Kaitai.Struct.Runtime</AssemblyName>
     <RootNamespace>Kaitai</RootNamespace>
     <PackageProjectUrl>http://kaitai.io/</PackageProjectUrl>
