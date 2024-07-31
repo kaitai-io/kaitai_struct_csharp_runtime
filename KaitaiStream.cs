@@ -447,27 +447,27 @@ namespace Kaitai
         /// <summary>
         /// Read a terminated string from the stream
         /// </summary>
-        /// <param name="terminator">The string terminator value</param>
-        /// <param name="includeTerminator">True to include the terminator in the returned string</param>
-        /// <param name="consumeTerminator">True to consume the terminator byte before returning</param>
+        /// <param name="term">The string terminator value</param>
+        /// <param name="includeTerm">True to include the terminator in the returned string</param>
+        /// <param name="consumeTerm">True to consume the terminator byte before returning</param>
         /// <param name="eosError">True to throw an error when the EOS was reached before the terminator</param>
         /// <returns></returns>
-        public byte[] ReadBytesTerm(byte terminator, bool includeTerminator, bool consumeTerminator, bool eosError)
+        public byte[] ReadBytesTerm(byte term, bool includeTerm, bool consumeTerm, bool eosError)
         {
             List<byte> bytes = new List<byte>();
             while (true)
             {
                 if (IsEof)
                 {
-                    if (eosError) throw new EndOfStreamException(string.Format("End of stream reached, but no terminator `{0}` found", terminator));
+                    if (eosError) throw new EndOfStreamException(string.Format("End of stream reached, but no terminator `{0}` found", term));
                     break;
                 }
 
                 byte b = ReadByte();
-                if (b == terminator)
+                if (b == term)
                 {
-                    if (includeTerminator) bytes.Add(b);
-                    if (!consumeTerminator) Seek(Pos - 1);
+                    if (includeTerm) bytes.Add(b);
+                    if (!consumeTerm) Seek(Pos - 1);
                     break;
                 }
                 bytes.Add(b);
@@ -511,15 +511,15 @@ namespace Kaitai
             return dst;
         }
 
-        public static byte[] BytesTerminate(byte[] src, byte terminator, bool includeTerminator)
+        public static byte[] BytesTerminate(byte[] src, byte term, bool includeTerm)
         {
             int newLen = 0;
             int maxLen = src.Length;
 
-            while (newLen < maxLen && src[newLen] != terminator)
+            while (newLen < maxLen && src[newLen] != term)
                 newLen++;
 
-            if (includeTerminator && newLen < maxLen)
+            if (includeTerm && newLen < maxLen)
                 newLen++;
 
             byte[] dst = new byte[newLen];
