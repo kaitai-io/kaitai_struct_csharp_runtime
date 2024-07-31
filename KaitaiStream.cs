@@ -454,6 +454,7 @@ namespace Kaitai
         /// <returns></returns>
         public byte[] ReadBytesTerm(byte term, bool includeTerm, bool consumeTerm, bool eosError)
         {
+            // TODO: check if `System.IO.MemoryStream` would be a better choice than `List<byte>`
             List<byte> bytes = new List<byte>();
             while (true)
             {
@@ -471,6 +472,32 @@ namespace Kaitai
                     break;
                 }
                 bytes.Add(b);
+            }
+            return bytes.ToArray();
+        }
+
+        public byte[] ReadBytesTermMulti(byte[] term, bool includeTerm, bool consumeTerm, bool eosError)
+        {
+            int unitSize = term.Length;
+            // TODO: check if `System.IO.MemoryStream` would be a better choice than `List<byte>`
+            List<byte> bytes = new List<byte>();
+            while (true)
+            {
+                byte[] c = base.ReadBytes(unitSize);
+                if (c.Length < unitSize)
+                {
+                    if (eosError) throw new EndOfStreamException(string.Format("End of stream reached, but no terminator `{0}` found", term));
+
+                    bytes.AddRange(c);
+                    break;
+                }
+                if (ByteArrayCompare(c, term) == 0)
+                {
+                    if (includeTerm) bytes.AddRange(c);
+                    if (!consumeTerm) Seek(Pos - unitSize);
+                    break;
+                }
+                bytes.AddRange(c);
             }
             return bytes.ToArray();
         }
@@ -522,6 +549,32 @@ namespace Kaitai
             if (includeTerm && newLen < maxLen)
                 newLen++;
 
+            byte[] dst = new byte[newLen];
+            Array.Copy(src, dst, newLen);
+            return dst;
+        }
+
+        public static byte[] BytesTerminateMulti(byte[] src, byte[] term, bool includeTerm)
+        {
+            int unitSize = term.Length;
+            if (unitSize == 0) {
+                return new byte[0];
+            }
+            int newLen = src.Length;
+            int iTerm = 0;
+            for (int iSrc = 0; iSrc < src.Length;) {
+                if (src[iSrc] != term[iTerm]) {
+                    iSrc += unitSize - iTerm;
+                    iTerm = 0;
+                    continue;
+                }
+                iSrc++;
+                iTerm++;
+                if (iTerm == unitSize) {
+                    newLen = iSrc - (includeTerm ? 0 : unitSize);
+                    break;
+                }
+            }
             byte[] dst = new byte[newLen];
             Array.Copy(src, dst, newLen);
             return dst;
