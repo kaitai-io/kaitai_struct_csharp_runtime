@@ -638,7 +638,7 @@ namespace Kaitai
                     for (int i = 0; i < data.Length; i++)
                     {
                         byte bits = data[i];
-                        // http://stackoverflow.com/a/812039
+                        // https://stackoverflow.com/a/812039
                         r[i] = (byte) ((bits << amount) | (bits >> (8 - amount)));
                     }
                     break;

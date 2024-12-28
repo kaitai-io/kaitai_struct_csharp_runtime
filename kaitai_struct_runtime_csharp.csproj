@@ -25,7 +25,7 @@
     <Copyright>Copyright © Kaitai Project 2016-2024</Copyright>
     <AssemblyName>Kaitai.Struct.Runtime</AssemblyName>
     <RootNamespace>Kaitai</RootNamespace>
-    <PackageProjectUrl>http://kaitai.io/</PackageProjectUrl>
+    <PackageProjectUrl>https://kaitai.io/</PackageProjectUrl>
     <RepositoryUrl>https://github.com/kaitai-io/kaitai_struct_csharp_runtime</RepositoryUrl>
     <PackageTags>Kaitai Struct File-Format Binary Protocols</PackageTags>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
