@@ -354,7 +354,7 @@ namespace Kaitai
 
                 // NB: in C#, bit shift operators on left-hand operand of type `ulong` work
                 // as if the right-hand operand were subjected to `& 63` (`& 0b11_1111`) (see
-                // https://docs.microsoft.com/en-us/dotnet/csharp/language-reference/operators/bitwise-and-shift-operators#shift-count-of-the-shift-operators),
+                // https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/operators/bitwise-and-shift-operators#shift-count-of-the-shift-operators),
                 // so `res >> 64` is equivalent to `res >> 0` (but we don't want that)
                 ulong newBits = bitsNeeded < 64 ? res >> bitsNeeded : 0;
                 res = res << BitsLeft | Bits;
