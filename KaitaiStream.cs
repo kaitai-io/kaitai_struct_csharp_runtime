@@ -56,6 +56,7 @@ namespace Kaitai
         /// <param name="position">The position to seek to</param>
         public void Seek(long position)
         {
+            AlignToByte();
             BaseStream.Seek(position, SeekOrigin.Begin);
         }
 
@@ -87,6 +88,7 @@ namespace Kaitai
         /// <returns></returns>
         public sbyte ReadS1()
         {
+            AlignToByte();
             return ReadSByte();
         }
 
@@ -98,6 +100,7 @@ namespace Kaitai
         /// <returns></returns>
         public short ReadS2be()
         {
+            AlignToByte();
             return BitConverter.ToInt16(ReadBytesNormalisedBigEndian(2), 0);
         }
 
@@ -107,6 +110,7 @@ namespace Kaitai
         /// <returns></returns>
         public int ReadS4be()
         {
+            AlignToByte();
             return BitConverter.ToInt32(ReadBytesNormalisedBigEndian(4), 0);
         }
 
@@ -116,6 +120,7 @@ namespace Kaitai
         /// <returns></returns>
         public long ReadS8be()
         {
+            AlignToByte();
             return BitConverter.ToInt64(ReadBytesNormalisedBigEndian(8), 0);
         }
 
@@ -129,6 +134,7 @@ namespace Kaitai
         /// <returns></returns>
         public short ReadS2le()
         {
+            AlignToByte();
             return BitConverter.ToInt16(ReadBytesNormalisedLittleEndian(2), 0);
         }
 
@@ -138,6 +144,7 @@ namespace Kaitai
         /// <returns></returns>
         public int ReadS4le()
         {
+            AlignToByte();
             return BitConverter.ToInt32(ReadBytesNormalisedLittleEndian(4), 0);
         }
 
@@ -147,6 +154,7 @@ namespace Kaitai
         /// <returns></returns>
         public long ReadS8le()
         {
+            AlignToByte();
             return BitConverter.ToInt64(ReadBytesNormalisedLittleEndian(8), 0);
         }
 
@@ -162,6 +170,7 @@ namespace Kaitai
         /// <returns></returns>
         public byte ReadU1()
         {
+            AlignToByte();
             return ReadByte();
         }
 
@@ -173,6 +182,7 @@ namespace Kaitai
         /// <returns></returns>
         public ushort ReadU2be()
         {
+            AlignToByte();
             return BitConverter.ToUInt16(ReadBytesNormalisedBigEndian(2), 0);
         }
 
@@ -182,6 +192,7 @@ namespace Kaitai
         /// <returns></returns>
         public uint ReadU4be()
         {
+            AlignToByte();
             return BitConverter.ToUInt32(ReadBytesNormalisedBigEndian(4), 0);
         }
 
@@ -191,6 +202,7 @@ namespace Kaitai
         /// <returns></returns>
         public ulong ReadU8be()
         {
+            AlignToByte();
             return BitConverter.ToUInt64(ReadBytesNormalisedBigEndian(8), 0);
         }
 
@@ -204,6 +216,7 @@ namespace Kaitai
         /// <returns></returns>
         public ushort ReadU2le()
         {
+            AlignToByte();
             return BitConverter.ToUInt16(ReadBytesNormalisedLittleEndian(2), 0);
         }
 
@@ -213,6 +226,7 @@ namespace Kaitai
         /// <returns></returns>
         public uint ReadU4le()
         {
+            AlignToByte();
             return BitConverter.ToUInt32(ReadBytesNormalisedLittleEndian(4), 0);
         }
 
@@ -222,6 +236,7 @@ namespace Kaitai
         /// <returns></returns>
         public ulong ReadU8le()
         {
+            AlignToByte();
             return BitConverter.ToUInt64(ReadBytesNormalisedLittleEndian(8), 0);
         }
 
@@ -241,6 +256,7 @@ namespace Kaitai
         /// <returns></returns>
         public float ReadF4be()
         {
+            AlignToByte();
             return BitConverter.ToSingle(ReadBytesNormalisedBigEndian(4), 0);
         }
 
@@ -250,6 +266,7 @@ namespace Kaitai
         /// <returns></returns>
         public double ReadF8be()
         {
+            AlignToByte();
             return BitConverter.ToDouble(ReadBytesNormalisedBigEndian(8), 0);
         }
 
@@ -263,6 +280,7 @@ namespace Kaitai
         /// <returns></returns>
         public float ReadF4le()
         {
+            AlignToByte();
             return BitConverter.ToSingle(ReadBytesNormalisedLittleEndian(4), 0);
         }
 
@@ -272,6 +290,7 @@ namespace Kaitai
         /// <returns></returns>
         public double ReadF8le()
         {
+            AlignToByte();
             return BitConverter.ToDouble(ReadBytesNormalisedLittleEndian(8), 0);
         }
 
@@ -304,7 +323,7 @@ namespace Kaitai
                 // 8 bits => 1 byte
                 // 9 bits => 2 bytes
                 int bytesNeeded = ((bitsNeeded - 1) / 8) + 1; // `ceil(bitsNeeded / 8)`
-                byte[] buf = ReadBytes(bytesNeeded);
+                byte[] buf = base.ReadBytes(bytesNeeded);
                 for (int i = 0; i < bytesNeeded; i++)
                 {
                     res = res << 8 | buf[i];
@@ -346,7 +365,7 @@ namespace Kaitai
                 // 8 bits => 1 byte
                 // 9 bits => 2 bytes
                 int bytesNeeded = ((bitsNeeded - 1) / 8) + 1; // `ceil(bitsNeeded / 8)`
-                byte[] buf = ReadBytes(bytesNeeded);
+                byte[] buf = base.ReadBytes(bytesNeeded);
                 for (int i = 0; i < bytesNeeded; i++)
                 {
                     res |= ((ulong)buf[i]) << (i * 8);
@@ -388,6 +407,7 @@ namespace Kaitai
         /// <returns></returns>
         public byte[] ReadBytes(long count)
         {
+            AlignToByte();
             if (count < 0 || count > Int32.MaxValue)
                 throw new ArgumentOutOfRangeException("requested " + count + " bytes, while only non-negative int32 amount of bytes possible");
             byte[] bytes = base.ReadBytes((int) count);
@@ -403,6 +423,7 @@ namespace Kaitai
         /// <returns></returns>
         public byte[] ReadBytes(ulong count)
         {
+            AlignToByte();
             if (count > Int32.MaxValue)
                 throw new ArgumentOutOfRangeException("requested " + count + " bytes, while only non-negative int32 amount of bytes possible");
             byte[] bytes = base.ReadBytes((int)count);
@@ -441,6 +462,7 @@ namespace Kaitai
         /// <returns></returns>
         public byte[] ReadBytesFull()
         {
+            AlignToByte();
             return ReadBytes(BaseStream.Length - BaseStream.Position);
         }
 
@@ -454,6 +476,7 @@ namespace Kaitai
         /// <returns></returns>
         public byte[] ReadBytesTerm(byte term, bool includeTerm, bool consumeTerm, bool eosError)
         {
+            AlignToByte();
             // TODO: check if `System.IO.MemoryStream` would be a better choice than `List<byte>`
             List<byte> bytes = new List<byte>();
             while (true)
@@ -478,6 +501,7 @@ namespace Kaitai
 
         public byte[] ReadBytesTermMulti(byte[] term, bool includeTerm, bool consumeTerm, bool eosError)
         {
+            AlignToByte();
             int unitSize = term.Length;
             // TODO: check if `System.IO.MemoryStream` would be a better choice than `List<byte>`
             List<byte> bytes = new List<byte>();
